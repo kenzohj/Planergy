@@ -1,4 +1,4 @@
-# ⚡ PLANERGY - ERP (2023)
+# ⚡ PLANERGY - ERP (2024)
 
 <p align="center">
   <img src="https://github.com/kenzohj/Planergy/blob/main/login.png" alt="Login page" width="400" />
