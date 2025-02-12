@@ -1,4 +1,9 @@
-# ⚡ PLANERGY - ERP (2023)  
+# ⚡ PLANERGY - ERP (2023)
+
+<p align="center">
+  <img src="https://github.com/kenzohj/Planergy/blob/main/login.png" alt="Login page" width="380" />
+  <img src="https://github.com/kenzohj/Planergy/blob/main/home.png" alt="Home page" width="627" />
+</p>
 
 **🇫🇷 Français | [🇬🇧 English below](#-english-version-)**  
 
