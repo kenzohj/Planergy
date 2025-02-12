@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>modaletest</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- nous -->
+    <link rel="stylesheet" href="../css/base.css" />
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+    <script src="../js/formUtils.js"></script>
+</head>
+
+<body class="bgIsBlackPage">
+    <div class="flexiCenter m-0 py-0 px-2 overflow-y-auto" style="height: 100vh !important; width: 100vw !important;">
+        <form class="bgIsWhitePage container align-items-center p-2 border-black border-2 border rounded">
+            <form>
+                <div class="form-group">
+                    <label for="name">Nom</label>
+                    <input type="text" class="form-control shadow" id="name" placeholder="Dupont" />
+                </div>
+                <div class="form-group">
+                    <label for="username">Prénom</label>
+                    <input type="text" class="form-control shadow" id="username" placeholder="Jean" />
+                </div>
+                <div class="form-group">
+                    <label for="mail">Email</label>
+                    <input type="text" class="form-control shadow" id="mail" placeholder="exemple@domaine.fr" />
+                </div>
+                <div class="form-group">
+                    <label for="role">Rôle</label>
+                    <select class="form-control shadow" id="role">
+                        <option value="gerant">Gérant</option>
+                        <option value="employe">Employé</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mdp">Mot de passe</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control shadow" id="mdp" placeholder="Mot de passe" />
+                        <span class="input-group-text">
+                            <i class="far fa-eye" id="eyeIcon" onclick="togglePasswordVisibility()"></i>
+                        </span>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-12 text-end">
+                        <button type="button" class="btn btn-success btn-sm" onclick="register()">Créer un
+                            compte</button>
+                    </div>
+                </div>
+            </form>
+        </form>
+    </div>
+</body>
+
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById("mdp");
+        const eyeIcon = document.getElementById("eyeIcon");
+
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            eyeIcon.classList.remove("far", "fa-eye");
+            eyeIcon.classList.add("fas", "fa-eye-slash");
+        } else {
+            passwordInput.type = "password";
+            eyeIcon.classList.remove("fas", "fa-eye-slash");
+            eyeIcon.classList.add("far", "fa-eye");
+        }
+    }
+
+    function register() {
+        const lastName = document.getElementById("name").value;
+        const firstName = document.getElementById("username").value;
+        const mail = document.getElementById("mail").value;
+        const role = document.getElementById("role").value;
+        const password = document.getElementById("mdp").value;
+
+        if (lastName === "" || firstName === "" || mail === "" || role === "" || password === "") {
+            console.error("Veuillez remplir tous les champs.");
+            alert("Veuillez remplir tous les champs.");
+            return;
+        }
+
+        const mailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!mailRegex.test(mail)) {
+            console.error("Format de l'adresse mail invalide.");
+            alert("Format de l'adresse mail invalide.");
+            return;
+        }
+
+        if (password.length < 8) {
+            console.error("Le mot de passe doit contenir au moins 8 caractères.");
+            alert("Le mot de passe doit contenir au moins 8 caractères.");
+            return;
+        }
+
+        const requestData = {
+            mail: mail,
+            password: password,
+            firstName: firstName,
+            lastName: lastName,
+            isAdmin: role === "gerant",
+        };
+
+        const requestRegister = new XMLHttpRequest();
+        requestRegister.open("POST", URL_SERVER_NAME + "/api/employee/create", true);
+        requestRegister.setRequestHeader("Content-Type", "application/json");
+        requestRegister.onreadystatechange = function () {
+            if (requestRegister.readyState !== XMLHttpRequest.DONE) return;
+
+            if (requestRegister.status === 409) {
+                console.error("L'utilisateur existe déjà.");
+                alert("L'utilisateur existe déjà.");
+            } else if (requestRegister.status === 201) {
+                console.log("Utilisateur créé avec succès.");
+                alert("Utilisateur créé avec succès.");
+            }
+        };
+        requestRegister.send(JSON.stringify(requestData));
+    }
+</script>
+
+</html>

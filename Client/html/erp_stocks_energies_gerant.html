@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ERP - SAE4</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- nous -->
+    <link rel="stylesheet" href="../css/base.css" />
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+
+    <script>
+        /* generate with spring using session credentials ?*/
+        const isGerant = true;
+        const USERID = 1;
+    </script>
+</head>
+
+<body class="bgIsWhitePage container-fluid text-center p-3">
+    <div class="w-100 h-auto px-3 py-1 flexiCenter">
+        <div class="btn btn-outline-primary w-100 text-center"
+            onclick="if(isGerant){ERPMODALS.open.creer_energie()}else{alert('Vous n\'avez pas les droits suffisants !');}">
+            <i class="fa-regular fa-square-plus"></i>
+            Ajouter une nouvelle énergie
+        </div>
+    </div>
+    <hr class="my-2" />
+    <table class="table">
+        <thead>
+            <tr>
+                <td colspan="3" rowspan="1" class="text-start m-0 px-0 pt-1 pb-2">
+                    <span class="rounded justify-content-between border text-black px-2 w-auto"
+                        onclick="this.getElementsByTagName('input')[0].click()">
+                        <input type="checkbox"
+                            onclick="event.stopPropagation();setAllCheckBoxes(this.checked,'productCheckBox');" />
+                        <span class="d-none d-md-inline">tout</span>&nbsp;selectionner
+                    </span>
+                </td>
+                <th colspan="3" rowspan="1" class="m-0 py-1">
+                    <div class="input-group w-100 justify-content-center">
+                        <input class="form-control-sm text-light border-0 border-dark rounded-start-pill bg-dark"
+                            style="width: 80% !important;" placeholder="Filtre textuel (tous les champs)"
+                            onkeyup="filterTheZone(document.getElementById('productsRows'),this.value)" />
+                        <div
+                            class="input-group-text m-0 py-0 px-1 bg-dark border-dark rounded-end-pill px-2 text-white">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody class="text-start" id="productsRows">
+            <!-- PRODUCT ROWS -->
+        </tbody>
+    </table>
+</body>
+<script>
+
+    let EnergyIdByName = new Map();
+
+    let productsTable = {
+        rowsContainer: document.getElementById("productsRows"),
+
+        add: function (argProduct) {
+            this.add(argProduct.name, argProduct.price, argProduct.quantity, argProduct.limit);
+        },
+        add: function (argName, argPrice, argQuantity, argLimit) {
+            //<tr>
+            let newRow = document.createElement("tr");
+            newRow.setAttribute("colspan", "4");
+            newRow.setAttribute("filterString", `${argName} ${argPrice} ${argQuantity} ${argLimit}`);
+            newRow.classList.add("filteredElement");
+
+            // checkbox
+            let checkboxCell = document.createElement("td");
+            checkboxCell.setAttribute("colspan", "1");
+            checkboxCell.classList.add("col");
+            checkboxCell.innerHTML = `<input type="checkbox" class="productCheckBox" data-id="${argName}" />`;
+            newRow.appendChild(checkboxCell);
+
+            // Cellules pour les autres données
+            let dataCells = [
+                { text: argName, label: "Nom" },
+                { text: argPrice, label: "Prix" },
+                {
+                    text: `<div class="progress ">
+                    <div class="progress-bar ${(argQuantity / MAX_ENERGY) * 100 > 70 ? "bg-success" : (argQuantity / MAX_ENERGY) * 100 > 60 ? "bg-info" : (argQuantity / MAX_ENERGY) * 100 > 40 ? "bg-warning" : "bg-danger"
+                        }" role="progressbar" style="width: ${(argQuantity / MAX_ENERGY) * 100}%" aria-valuenow="${argQuantity}" aria-valuemin="0" aria-valuemax=${MAX_ENERGY} ></div>
+                </div>`,
+                    label: "Quantité disponible",
+                    quantity: argQuantity,
+                },
+            ];
+
+            dataCells.forEach((cellData) => {
+                let dataCell = document.createElement("td");
+                dataCell.classList.add("col");
+                dataCell.innerHTML = `
+                <div class="text-black position-relative fw-bold ${cellData.hideWhenNarrow === "true" ? "d-none d-md-inline" : ""}">
+                    ${cellData.text}
+                    <span class="position-absolute top-0 start-0 translate-middle-y badge p-0 pb-1 m-0 text-secondary">${cellData.label}</span>
+                </div>
+            `;
+                newRow.appendChild(dataCell);
+            });
+
+            newRow.appendChild(document.createElement("br"));
+
+            let replenishCell = document.createElement("td");
+            replenishCell.setAttribute("colspan", "3");
+            replenishCell.classList.add("col");
+            replenishCell.innerHTML = `<button onclick="replenish(${argName})" class="btn btn-primary btn-sm">Réapprovisionner</button>`;
+            newRow.appendChild(replenishCell);
+
+            // actions
+            let actionsCell = document.createElement("td");
+            actionsCell.setAttribute("colspan", "1");
+            actionsCell.setAttribute("rowspan", "1");
+            actionsCell.classList.add("m-0", "px-2", "pt-2", "pb-1", "text-center");
+            actionsCell.innerHTML = `<div class="btn-group">
+        <button class="btn btn-dark btn-sm dropdown-toggle rounded-pill px-3 m-0" type="button" data-bs-toggle="dropdown">
+            Actions
+        </button>
+        <ul class="dropdown-menu dropdown-menu-dark">
+            <li class="dropdown-item text-center text-warning" onclick="modif('${argName.replace(" ", "%20")}')">Modifier</li>
+            <li class="dropdown-item text-center text-danger" onclick="deleteEssence('${argName}')">Supprimer</li>
+        </ul>
+    </div>`;
+            newRow.appendChild(actionsCell);
+
+            this.rowsContainer.appendChild(newRow);
+        },
+
+        clear: function () {
+            this.rowsContainer.innerHTML = "";
+        },
+        fetch: function () {
+            fetch(URL_SERVER_NAME + "/api/energy/all")
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch energy data");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    data.forEach((energy) => {
+                        EnergyIdByName.set(energy.name, energy.id);
+                        this.add(energy.name, energy.price + " €", energy.quantity, energy.limit);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching energy data:", error);
+                });
+        },
+    };
+    function setAllCheckBoxes(argState, checkBoxesClass) {
+        const checkboxes = document.getElementsByClassName(checkBoxesClass);
+        let checkbox;
+        for (let i = 0; i < checkboxes.length; i++) {
+            checkbox = checkboxes[i];
+            if (checkbox.checked !== argState) {
+                checkbox.click();
+                checkbox.checked = argState;
+            }
+        }
+    }
+
+    function replenish(productId) {
+        console.log("Réapprovisionner le produit avec l'ID :", productId);
+    }
+
+    function deleteEssence(name) {
+        console.log("Supprimer l'énergie avec l'ID :", name);
+        fetch(URL_SERVER_NAME + "/api/energy/delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: name
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to delete energy");
+                }
+                alert("Energie supprimée avec succès !");
+                console.log("Energie supprimée avec succès !");
+                productsTable.clear();
+                productsTable.fetch();
+            })
+            .catch((error) => {
+                console.error("Error deleting energy:", error);
+            });
+    }
+
+</script>
+
+<script>
+    productsTable.fetch();
+</script>
+
+<script>
+    function modif(name){
+        console.log("Modifier l'énergie avec le nom :", name);
+        ERPMODALS.open.modifier_energie(name);
+    }
+</script>
+
+</html>

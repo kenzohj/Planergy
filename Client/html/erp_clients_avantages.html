@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liste des bonus</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>Liste des bonus</h1>
+        <div id="bonusList" class="mt-3"></div>
+        <button id="createBonusButton" class="btn btn-primary mt-3">Nouveau bonus</button>
+    </div>
+
+    <!-- Modal for creating a new bonus -->
+    <div class="modal" id="createBonusModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouveau bonus</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="createBonusForm">
+                        <div class="form-group">
+                            <label for="minAmountInput">Montant minimum (en euros)</label>
+                            <input type="number" class="form-control" id="minAmountInput"
+                                placeholder="Entrez le montant minimum" />
+                        </div>
+                        <div class="form-group">
+                            <label for="bonusAmountInput">Montant du bonus (en euros)</label>
+                            <input type="number" class="form-control" id="bonusAmountInput"
+                                placeholder="Entrez le montant du bonus" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Créer le bonus</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            loadBonusList();
+
+            // Open modal to create a new bonus
+            document.getElementById("createBonusButton").addEventListener("click", function () {
+                $("#createBonusModal").modal("show");
+            });
+
+            // Handle form submission to create a new bonus
+            document.getElementById("createBonusForm").addEventListener("submit", function (event) {
+                event.preventDefault();
+                createBonus();
+            });
+        });
+
+        // Function to load the list of bonuses
+        function loadBonusList() {
+            fetch(URL_SERVER_NAME + "/api/bonus/all")
+                .then((response) => response.json())
+                .then((data) => {
+                    const bonusListContainer = document.getElementById("bonusList");
+                    bonusListContainer.innerHTML = "";
+
+                    data.forEach((bonus) => {
+                        const bonusItem = document.createElement("div");
+                        bonusItem.classList.add("card", "mb-2");
+                        bonusItem.innerHTML = `
+                            <div class="card-body">
+                                <h5 class="card-title">Montant minimum: ${bonus.minAmount} €</h5>
+                                <p class="card-text">Montant du bonus: ${bonus.bonusAmount} €</p>
+                            </div>
+                        `;
+                        bonusListContainer.appendChild(bonusItem);
+                    });
+                })
+                .catch((error) => console.error("Error fetching bonus list:", error));
+        }
+
+        // Function to create a new bonus
+        function createBonus() {
+            const minAmount = document.getElementById("minAmountInput").value;
+            const bonusAmount = document.getElementById("bonusAmountInput").value;
+
+            fetch(URL_SERVER_NAME + "/api/bonus/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ minAmount: minAmount, bonusAmount: bonusAmount }),
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        console.log("New bonus created successfully");
+                        // Close the modal after successful creation
+                        $("#createBonusModal").modal("hide");
+                        // Reload the bonus list to display the newly created bonus
+                        loadBonusList();
+                    } else {
+                        throw new Error("Failed to create new bonus");
+                    }
+                })
+                .catch((error) => console.error("Error creating new bonus:", error));
+        }
+    </script>
+</body>
+
+</html>

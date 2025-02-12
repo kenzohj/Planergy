@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ERP - SAE4</title>
+
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- nous -->
+    <link rel="stylesheet" href="../css/base.css" />
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+    <script src="../js/Utils.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js">
+    </script>
+    <script>const { jsPDF } = window.jspdf;
+    </script>
+
+
+    <script>
+
+        let isGerant = true; // pour le debug
+        const cashier = JSON.parse(sessionStorage.getItem("user"));
+        if (cashier == null) {
+            window.location.href = "page_connexion.html";
+        }
+
+        console.log("CASHIERLOG : " + cashier);
+        isGerant = cashier.admin;
+        const USERID = 1;
+    </script>
+</head>
+
+<body class="bgIsBlackPage container-fluid text-center">
+    <div class="actualContainer p-2 justify-content-start noscrollbar container-fluid">
+        <!-- CONTAINER PRINCIPAL -->
+        <div class="row m-0 p-0">
+            <div class="col-12 p-1 col-lg-8 col-xxl-8">
+                <div class=" BASECONTAINER noscrollbar row m-0">
+                    <div class="col-12 px-3 py-1" id="CONTAINER-ERP">
+
+                        <div class="row m-0 py-1 px-0 border-bottom d-flex justify-content-start align-items-center">
+                            <div class="col-auto">
+                                <div class="row d-flex justify-content-start align-items-center">
+                                    <button
+                                        class="col-auto mx-1 py-1 px-2 btn btn-dark border-dark border-4 rounded d-flex"
+                                        type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNAV">
+                                        <i class="fa-solid fa-bars"></i>
+                                    </button>
+                                    <div id="TITLES-ERP" class="col-auto p-0 m-0">
+                                        <h4>
+                                            <span class="sectionName text-dark">
+                                                [SectionName]
+                                            </span>
+                                            -
+                                            <span class="subsectionName text-secondary">
+                                                [SubsectionName]
+                                            </span>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ERP DISPLAY DIV  -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 p-1 col-lg-4 col-xxl-4">
+                <div class=" BASECONTAINER noscrollbar row m-0" id="CONTAINER-CAISSE">
+                    <div class="col-12 px-3 py-1">
+                        <div class="row m-0 py-1 px-0 border-bottom d-flex justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <div class="row d-flex justify-content-start align-items-center">
+                                    <div class="col-auto p-0 m-0">
+                                        <h4 id="ERP-TITLE">
+                                            <span class="sectionName text-dark">
+                                                Caisse
+                                            </span>
+                                            -
+                                            <span class="subsectionName text-secondary">
+                                                transaction
+                                            </span>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="CAISSE-CONTENT" class="col-12 pt-3">
+                                <div class="row justify-content-center align-items-center">
+                                    <div id="CAISSE_CONTAINER_A"
+                                        class=" border border-black rounded border-2 col-12 col-sm-7 col-lg-12 position-relative ">
+                                        <div classs="row py-1 ">
+                                            <div
+                                                class="table-Medium col-12 p-1 my-2 border rounded border-2  border-secondary">
+                                                <table class="table">
+                                                    <tbody id="transactionLines">
+                                                        <!-- ROW TRANSACTION !!! -->
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-12 p-1 my-2 ">
+                                                <table class="w-100">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td
+                                                                class=" ps-2 pe-1 justify-content-center align-items-center">
+                                                                <div
+                                                                    class="position-relative  border-black border-2 align-items-center border-bottom rounded">
+                                                                    &nbsp;<span id="transactionLines-Total"
+                                                                        style="max-height:5em;">0</span>&nbsp;€&nbsp;
+                                                                    <span
+                                                                        class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-black">
+                                                                        Total
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td
+                                                                class=" ps-2 pe-1 justify-content-center align-items-center">
+                                                                <div
+                                                                    class="position-relative  border-black border-2 align-items-center border-bottom rounded">
+                                                                    &nbsp;<span id="transactionLines-Paye"
+                                                                        style="max-height:5em;">0</span>&nbsp;€&nbsp;
+                                                                    <span
+                                                                        class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-black">
+                                                                        Payé
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td
+                                                                class=" ps-2 pe-1 justify-content-center align-items-center">
+                                                                <div
+                                                                    class="position-relative  border-black border-2 align-items-center border-bottom rounded">
+                                                                    &nbsp;<span id="transactionLines-Reste"
+                                                                        style="max-height:5em;">0</span>&nbsp;€&nbsp;
+                                                                    <span
+                                                                        class=" position-absolute top-0 start-0 translate-middle-y badge p-0 m-0  text-black">
+                                                                        Reste
+                                                                    </span>
+                                                                    <span
+                                                                        class=" position-absolute top-0 start-100 translate-middle badge p-0 m-0  text-black">
+                                                                        <div class="btn btn-sm btn-primary px-1 py-0 me-1"
+                                                                            onclick="
+                                                                                document.getElementById('numPadField').value=document.getElementById('transactionLines-Reste').innerText;
+                                                                                numPad.setOtherFields(document.getElementById('transactionLines-Reste').innerText);">
+                                                                            +<i class="fa-solid fa-calculator"></i>
+                                                                        </div>
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <script defer="true">
+                                                let transactionSection = {
+                                                    container: document.getElementById("CAISSE_CONTAINER_A"),
+                                                    section: document.getElementById("transactionLines"),
+                                                    lines: undefined,
+                                                    linesCount: document.getElementById("transactionLinesCount"),
+                                                    checkSums: function () {
+                                                        const elementsToCheck = this.section.getElementsByClassName("transactionLine");
+                                                        let total = 0;
+                                                        let paye = 0;
+
+                                                        // Ligne par ligne
+                                                        for (let i = 0; i < elementsToCheck.length; i++) {
+                                                            const elementToCheck = elementsToCheck[i].getElementsByClassName('transactionLineQuantity')[0];
+                                                            const quantity = elementToCheck.value;
+                                                            let price = elementToCheck.getAttribute("data-unitPrice");
+                                                            const name = elementToCheck.getAttribute("data-name");
+                                                            let weight = elementToCheck.getAttribute("data-weight");
+
+                                                            const elementToDisplay = elementsToCheck[i].getElementsByClassName("transactionLine-Sum")[0];
+                                                            if (weight != null && weight != undefined) {
+                                                                weight = parseFloat(weight);
+                                                            } else {
+                                                                weight = 1;
+                                                            }
+                                                            //si Nan, on met 1
+                                                            if (isNaN(weight)) {
+                                                                weight = 1;
+                                                            }
+                                                            //si price est null, on essaye de recup data-price a la place
+                                                            if (price == null || price == undefined) {
+                                                                price = elementToCheck.getAttribute("data-price");
+                                                            }
+                                                            const valueToDisplay = quantity * price * weight;
+                                                            // Vérifie si valueToDisplay est un nombre avant de l'afficher
+                                                            if (!isNaN(valueToDisplay) && isFinite(valueToDisplay)) {
+                                                                elementToDisplay.innerHTML = valueToDisplay.toFixed(2);
+                                                                // Vérifie si la ligne est marquée comme paiement
+                                                                const isPayment = elementsToCheck[i].getAttribute("isPayment");
+                                                                if (isPayment && isPayment.toLowerCase() === 'true') {
+                                                                    paye += valueToDisplay;
+                                                                } else {
+                                                                    total += valueToDisplay;
+                                                                }
+                                                            } else {
+                                                                elementToDisplay.innerHTML = 0;
+                                                            }
+                                                        }
+                                                        const reste = total - paye;
+                                                        document.getElementById("transactionLines-Total").innerText = total.toFixed(2);
+                                                        document.getElementById("transactionLines-Paye").innerText = paye.toFixed(2);
+                                                        document.getElementById("transactionLines-Reste").innerText = reste.toFixed(2);
+                                                        document.getElementById("btnFinalizeTransaction").disabled = reste > 0;
+                                                    }
+                                                    ,
+                                                    clear: function () {
+                                                        var elemntsToClick = document.getElementsByClassName("btnDelLine");
+                                                        for (let i = 0; elementsToClick.length !== 0; i = i) {
+                                                            elementsToClick[i].click();
+                                                        }
+                                                    },
+                                                    addProductLine: function (argName, argQuantity, argUnit, argUnitPrice, argWeight, argIsEnergy) {
+                                                        const trElement = document.createElement('tr');
+                                                        trElement.setAttribute('isPayment', 'false');
+                                                        trElement.setAttribute('isEnergy', argIsEnergy);
+                                                        trElement.classList.add('transactionLine');
+                                                        const nameTd = document.createElement('td');
+                                                        nameTd.classList.add('LineName');
+                                                        nameTd.setAttribute('colspan', '2');
+                                                        nameTd.innerHTML = '<span class="badge bg-primary badge-info">' + argName + '</span>';
+                                                        const quantityTd = document.createElement('td');
+                                                        quantityTd.classList.add('text-center', 'justify-content-center', 'align-items-center');
+                                                        const inputGroupDiv = document.createElement('div');
+                                                        inputGroupDiv.classList.add('input-group', 'position-relative');
+                                                        const quantityInput = document.createElement('input');
+                                                        quantityInput.setAttribute('type', 'number');
+                                                        quantityInput.setAttribute('data-weight', argWeight);
+                                                        quantityInput.setAttribute('data-unitPrice', isNumber(argUnitPrice * argWeight) ? argUnitPrice : 0);
+                                                        quantityInput.classList.add('transactionLineQuantity', 'form-control-sm');
+                                                        quantityInput.setAttribute('onchange', 'transactionSection.checkSums();');
+                                                        quantityInput.setAttribute('step', '1');
+                                                        quantityInput.setAttribute('min', '0');
+                                                        quantityInput.setAttribute('style', 'max-width: 5em;');
+                                                        quantityInput.setAttribute('value', argQuantity);
+                                                        const unitSpan = document.createElement('span');
+                                                        unitSpan.classList.add('transactionLineUnit', 'input-group-text', 'm-0', 'py-0', 'px-1');
+                                                        unitSpan.textContent = argUnit;
+                                                        const quantityBadge = document.createElement('span');
+                                                        quantityBadge.classList.add('position-absolute', 'top-0', 'start-0', 'translate-middle-y', 'badge', 'p-0', 'm-0', 'ms-1', 'bg-white', 'text-black');
+                                                        quantityBadge.textContent = 'Quantité';
+                                                        inputGroupDiv.appendChild(quantityInput);
+                                                        inputGroupDiv.appendChild(unitSpan);
+                                                        inputGroupDiv.appendChild(quantityBadge);
+                                                        quantityTd.appendChild(inputGroupDiv);
+                                                        const amountTd = document.createElement('td');
+                                                        amountTd.classList.add('pt-3', 'pb-0', 'ps-2', 'pe-1', 'justify-content-center', 'align-items-center');
+                                                        const amountDiv = document.createElement('div');
+                                                        amountDiv.classList.add('h-100', 'w-100', 'd-flex', 'justify-content-around', 'align-content-center', 'm-0', 'p-0');
+                                                        const amountInnerDiv = document.createElement('div');
+                                                        amountInnerDiv.classList.add('position-relative', 'border-black', 'border-2', 'align-items-center', 'border-bottom', 'rounded');
+                                                        amountInnerDiv.innerHTML = '&nbsp;<span class="transactionLine-Sum">' + "" + '</span>&nbsp;€&nbsp;';
+                                                        const amountBadge = document.createElement('span');
+                                                        amountBadge.classList.add('position-absolute', 'top-0', 'start-0', 'translate-middle-y', 'badge', 'p-0', 'm-0', 'text-black');
+                                                        amountBadge.textContent = 'Montant';
+                                                        amountInnerDiv.appendChild(amountBadge);
+                                                        amountDiv.appendChild(amountInnerDiv);
+                                                        amountTd.appendChild(amountDiv);
+                                                        const deleteTd = document.createElement('td');
+                                                        deleteTd.classList.add('ps-1', 'justify-content-center', 'align-items-center');
+
+                                                        const deleteButton = document.createElement('button');
+                                                        deleteButton.setAttribute('type', 'button');
+                                                        deleteButton.classList.add('p-2', 'border', 'btn', 'btn-close', 'btn-dark', 'btnDelLine');
+                                                        deleteButton.setAttribute('onclick', 'this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);transactionSection.checkSums();');
+
+                                                        deleteTd.appendChild(deleteButton);
+                                                        trElement.appendChild(nameTd);
+                                                        trElement.appendChild(quantityTd);
+                                                        trElement.appendChild(amountTd);
+                                                        trElement.appendChild(deleteTd);
+
+                                                        document.getElementById('transactionLines').appendChild(trElement);
+
+                                                        this.checkSums();
+                                                    },
+                                                    addPaymentLine: function (argName, argUnitPrice) {
+                                                        const trElement = document.createElement('tr');
+                                                        trElement.classList.add('transactionLine');
+                                                        trElement.setAttribute('isPayment', 'true');
+                                                        trElement.setAttribute('isEnergy', 'false');
+                                                        trElement.style.backgroundColor = 'rgba(144, 238, 144, 0.3)';
+
+                                                        const nameTd = document.createElement('td');
+                                                        nameTd.classList.add('LineName');
+                                                        nameTd.classList.add('badge-primary');
+                                                        nameTd.setAttribute('colspan', '2');
+                                                        nameTd.innerHTML = '<span class="badge bg-success badge-success">' + argName + '</span>';
+
+                                                        const quantityTd = document.createElement('td');
+                                                        quantityTd.classList.add('text-center', 'justify-content-center', 'align-items-center');
+
+                                                        const inputGroupDiv = document.createElement('div');
+                                                        inputGroupDiv.classList.add('input-group', 'position-relative');
+
+                                                        const quantityInput = document.createElement('input');
+                                                        quantityInput.setAttribute('type', 'number');
+                                                        quantityInput.setAttribute('data-unitPrice', isNumber(argUnitPrice) ? argUnitPrice : 0);
+                                                        quantityInput.classList.add('transactionLineQuantity', 'form-control-sm');
+                                                        quantityInput.setAttribute('onchange', 'transactionSection.checkSums();');
+                                                        quantityInput.setAttribute('step', '1');
+                                                        quantityInput.setAttribute('min', '0');
+                                                        quantityInput.setAttribute('style', 'max-width: 5em;');
+                                                        quantityInput.setAttribute('value', '1'); // Quantité forcée à 1
+                                                        quantityInput.setAttribute('disabled', 'disabled'); // Input bloqué
+
+                                                        const unitSpan = document.createElement('span');
+                                                        unitSpan.classList.add('transactionLineUnit', 'input-group-text', 'm-0', 'py-0', 'px-1');
+                                                        unitSpan.textContent = 'U'; // Unité définie comme "U"
+
+                                                        const quantityBadge = document.createElement('span');
+                                                        quantityBadge.classList.add('position-absolute', 'top-0', 'start-0', 'translate-middle-y', 'badge', 'p-0', 'm-0', 'ms-1', 'bg-white', 'text-black');
+                                                        quantityBadge.textContent = 'Quantité';
+
+                                                        inputGroupDiv.appendChild(quantityInput);
+                                                        inputGroupDiv.appendChild(unitSpan);
+                                                        inputGroupDiv.appendChild(quantityBadge);
+                                                        quantityTd.appendChild(inputGroupDiv);
+
+                                                        const amountTd = document.createElement('td');
+                                                        amountTd.classList.add('pt-3', 'pb-0', 'ps-2', 'pe-1', 'justify-content-center', 'align-items-center');
+
+                                                        const amountDiv = document.createElement('div');
+                                                        amountDiv.classList.add('h-100', 'w-100', 'd-flex', 'justify-content-around', 'align-content-center', 'm-0', 'p-0');
+
+                                                        const amountInnerDiv = document.createElement('div');
+                                                        amountInnerDiv.classList.add('position-relative', 'border-black', 'border-2', 'align-items-center', 'border-bottom', 'rounded');
+                                                        amountInnerDiv.innerHTML = '&nbsp;<span class="transactionLine-Sum">' + "" + '</span>&nbsp;€&nbsp;';
+
+                                                        const amountBadge = document.createElement('span');
+                                                        amountBadge.classList.add('position-absolute', 'top-0', 'start-0', 'translate-middle-y', 'badge', 'p-0', 'm-0', 'text-black');
+                                                        amountBadge.textContent = 'Montant';
+
+                                                        amountInnerDiv.appendChild(amountBadge);
+                                                        amountDiv.appendChild(amountInnerDiv);
+                                                        amountTd.appendChild(amountDiv);
+
+                                                        const deleteTd = document.createElement('td');
+                                                        deleteTd.classList.add('ps-1', 'justify-content-center', 'align-items-center');
+
+                                                        const deleteButton = document.createElement('button');
+                                                        deleteButton.setAttribute('type', 'button');
+                                                        deleteButton.classList.add('p-2', 'border', 'btn', 'btn-close', 'btn-dark', 'btnDelLine');
+                                                        deleteButton.setAttribute('onclick', 'this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);transactionSection.checkSums();');
+
+                                                        deleteTd.appendChild(deleteButton);
+
+                                                        trElement.appendChild(nameTd);
+                                                        trElement.appendChild(quantityTd);
+                                                        trElement.appendChild(amountTd);
+                                                        trElement.appendChild(deleteTd);
+
+                                                        document.getElementById('transactionLines').appendChild(trElement);
+
+                                                        this.checkSums();
+                                                    },
+                                                    getJsonItems: function () {
+                                                        const elementsToCheck = this.section.getElementsByClassName("transactionLine");
+                                                        const items = [];
+                                                        for (let i = 0; i < elementsToCheck.length; i++) {
+                                                            const elementToCheck = elementsToCheck[i].getElementsByClassName('transactionLineQuantity')[0];
+                                                            const quantity = elementToCheck.value;
+                                                            const price = elementToCheck.getAttribute("data-unitPrice");
+                                                            const isPayment = elementsToCheck[i].getAttribute("isPayment");
+                                                            const isEnergy = elementsToCheck[i].getAttribute("isEnergy");
+                                                            const name = elementsToCheck[i].getElementsByClassName('LineName')[0].textContent;
+                                                            //si paiement, on ne prend pas en compte
+                                                            if ((!isPayment && !isEnergy) || ((isEnergy.toLowerCase() === 'false') && isPayment.toLowerCase() === 'false')) {
+                                                                items.push({
+                                                                    name: name,
+                                                                    quantity: quantity,
+                                                                    price: price,
+                                                                    isPayment: isPayment
+                                                                });
+                                                            }
+                                                        }
+                                                        return items;
+                                                    },
+                                                    getJsonEnergy: function () {
+                                                        const elementsToCheck = this.section.getElementsByClassName("transactionLine");
+                                                        const items = [];
+                                                        for (let i = 0; i < elementsToCheck.length; i++) {
+                                                            const elementToCheck = elementsToCheck[i].getElementsByClassName('transactionLineQuantity')[0];
+                                                            const quantity = elementToCheck.value;
+                                                            const price = elementToCheck.getAttribute("data-unitPrice");
+                                                            const isPayment = elementsToCheck[i].getAttribute("isPayment");
+                                                            const isEnergy = elementsToCheck[i].getAttribute("isEnergy");
+                                                            const name = elementsToCheck[i].getElementsByClassName('LineName')[0].textContent;
+                                                            //si paiement, on ne prend pas en compte
+                                                            if ((isEnergy && !isPayment) || (isEnergy.toLowerCase() === 'true' && isPayment.toLowerCase() === 'false')) {
+                                                                items.push({
+                                                                    name: name,
+                                                                    quantity: quantity,
+                                                                    price: price,
+                                                                    isPayment: isPayment
+                                                                });
+                                                            }
+                                                        }
+                                                        return items;
+                                                    },
+
+                                                    getJsonPayment: function () {
+                                                        const elementsToCheck = this.section.getElementsByClassName("transactionLine");
+                                                        const items = [];
+                                                        for (let i = 0; i < elementsToCheck.length; i++) {
+                                                            const elementToCheck = elementsToCheck[i].getElementsByClassName('transactionLineQuantity')[0];
+                                                            const quantity = elementToCheck.value;
+                                                            const price = elementToCheck.getAttribute("data-unitPrice");
+                                                            const isPayment = elementsToCheck[i].getAttribute("isPayment");
+                                                            const name = elementsToCheck[i].getElementsByClassName('LineName')[0].textContent;
+                                                            //si paiement, on prend en compte
+                                                            if (isPayment && isPayment.toLowerCase() === 'true') {
+                                                                items.push({
+                                                                    name: name,
+                                                                    quantity: quantity,
+                                                                    price: price,
+                                                                    isPayment: isPayment
+                                                                });
+                                                            }
+                                                        }
+                                                        return items;
+                                                    },
+                                                    getTotalAmount: function () {
+                                                        return parseFloat(document.getElementById("transactionLines-Total").textContent);
+                                                    },
+                                                };
+                                            </script>
+
+                                        </div>
+
+                                        </button>
+                                        <button
+                                            class="btn btn-sm btn-dark position-absolute top-0 mb-0 mt-2 ms-0 me-3 end-0 translate-middle-y "
+                                            onclick="transactionSection.clear();">
+                                            Réinitialiser <i class="fa-solid fa-cart-arrow-down"></i>
+                                        </button>
+                                    </div>
+                                    <div id="CAISSE_CONTAINER_B" class=" p-1 col-12 col-sm-5  col-lg-12">
+                                        <div id="Member_Container" class="p-1 col-auto flexiCenter ">
+                                            <div class=" ">
+                                                <div id="MemberSearch" class="dropdown-center">
+                                                    <button
+                                                        class="btn btn-white border border-warning dropdown-toggle pt-2 position-relative"
+                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                                        onclick="actualiserMembres();">
+                                                        Chercher un membre
+
+                                                        <div class="btn btn-sm btn-warning text-white my-1 py-0 px-2 col-auto
+                                                        position-absolute top-0 end-0 translate-middle-y"
+                                                            onclick="ERPMODALS.open.creer_membre()">
+                                                            Nouveau <i class="fa-regular text-white fa-square-plus"
+                                                                aria-hidden="true"></i>
+                                                        </div>
+                                                    </button>
+                                                    <ul class="dropdown-menu" id="MemberSearchDropdownMenu">
+                                                    </ul>
+                                                </div>
+                                                <div id="MemberTable"
+                                                    class="position-relative rounded border border-warning p-2 smallStrongShadowRight">
+                                                    <table class=" p-2 " style="border-spacing: 3px !important">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="fw-bold memberdisplayName">
+                                                                    Alexis
+                                                                </td>
+                                                                <td
+                                                                    class=" fw-bold pe-2 border-end memberdisplaySurname">
+                                                                    Legros
+                                                                </td>
+                                                                <td rowspan="2"
+                                                                    class=" ps-1 justify-content-center align-items-center d-table-cell d-lg-none">
+
+                                                                    <div class="dropdown">
+                                                                        <button
+                                                                            class="btn btn-warning btn-sm p-1 m-0 dropdown-toggle"
+                                                                            type="button"
+                                                                            data-bs-toggle="dropdown"></button>
+                                                                        <ul class="dropdown-menu">
+                                                                            <li class="dropdown-items p-2">
+                                                                                <div
+                                                                                    class="position-relative  border-success border-2 align-items-center border-bottom rounded">
+                                                                                    &nbsp;<span
+                                                                                        class="memberdisplayCredits">11,24</span>&nbsp;€&nbsp;
+                                                                                    <span
+                                                                                        class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-success">
+                                                                                        Crédits
+                                                                                    </span>
+                                                                                </div>
+                                                                            </li>
+                                                                            <li class="dropdown-items p-2">
+                                                                                <div
+                                                                                    class="position-relative  border-primary border-2  align-items-center border-bottom rounded">
+                                                                                    &nbsp;<span
+                                                                                        class="memberdisplayPoints">1124</span>&nbsp;
+                                                                                    <span
+                                                                                        class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-primary">
+                                                                                        Points
+                                                                                    </span>
+                                                                                </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </td>
+                                                                <td rowspan="2"
+                                                                    class=" ps-2 pe-1 justify-content-center align-items-center d-none d-lg-table-cell">
+                                                                    <div
+                                                                        class="position-relative  border-success border-2 align-items-center border-bottom rounded">
+                                                                        &nbsp;<span
+                                                                            class="memberdisplayCredits">11,24</span>&nbsp;€&nbsp;
+                                                                        <span
+                                                                            class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-success">
+                                                                            Crédits
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td rowspan="2"
+                                                                    class="px-1 justify-content-center align-items-center d-none d-lg-table-cell">
+                                                                    <div
+                                                                        class="position-relative  border-primary border-2  align-items-center border-bottom rounded">
+                                                                        &nbsp;<span
+                                                                            class="memberdisplayPoints">1124</span>&nbsp;
+                                                                        <span
+                                                                            class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-primary">
+                                                                            Points
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td rowspan="2"
+                                                                    class="ps-1 justify-content-center align-items-center">
+                                                                    <button id="btnRemoveMember" type="button"
+                                                                        class="btn btn-close btn-dark"></button>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2"
+                                                                    class=" pe-2 border-end memberdisplayEmail">
+                                                                    alexislegrosnc@gmail.com
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <div class="d-none memberdisplayId">1</div>
+                                                    <div class="btn btn-sm btn-secondary text-white my-1 py-0 px-2 col-auto
+                                                        position-absolute top-0 end-0 translate-middle-y"
+                                                        onclick="ERPMODALS.open.modifier_membre(this.parentNode.querySelector('.memberdisplayId').innerText)">
+                                                        Modifier <i class="fa-solid fa-pen-to-square"></i>
+                                                    </div>
+                                                </div>
+                                                <script>
+                                                    let memberSection = {
+                                                        //divers
+                                                        container: document.getElementById("Member_Container"),
+                                                        memberDisplay: document.getElementById("MemberTable"),
+                                                        removeMemberBtn: document.getElementById("btnRemoveMember"),
+                                                        searchDisplay: document.getElementById("MemberSearch"),
+                                                        member: {
+                                                            id: undefined,
+                                                            name: undefined,
+                                                            surname: undefined,
+                                                            email: undefined,
+                                                            credit: undefined,
+                                                            points: undefined,
+                                                        },
+                                                        //methodes
+                                                        clear: function () {
+                                                            this.set(undefined, undefined, undefined, undefined, undefined, undefined);
+                                                        },
+                                                        set: function (argId, argName, argSurname, argEmail, argCredit, argPoints, argDisplay) {
+                                                            this.member.id = argId;
+                                                            this.member.name = argName;
+                                                            this.member.surname = argSurname;
+                                                            this.member.email = argEmail;
+                                                            this.member.credit = argCredit;
+                                                            this.member.points = argPoints;
+                                                            if (argDisplay) {
+                                                                this.displayMember();
+                                                            }
+                                                        },
+                                                        displayMember: function () {
+                                                            let elementsToEdit = this.memberDisplay.getElementsByClassName("memberdisplayId");
+                                                            for (let i = 0; i < elementsToEdit.length; i++) {
+                                                                elementsToEdit[i].innerHTML = this.member.id;
+                                                            }
+                                                            elementsToEdit = this.memberDisplay.getElementsByClassName("memberdisplayName");
+                                                            for (let i = 0; i < elementsToEdit.length; i++) {
+                                                                elementsToEdit[i].innerHTML = this.member.name;
+                                                            }
+                                                            elementsToEdit = this.memberDisplay.getElementsByClassName("memberdisplaySurname");
+                                                            for (let i = 0; i < elementsToEdit.length; i++) {
+                                                                elementsToEdit[i].innerHTML = this.member.surname;
+                                                            }
+                                                            elementsToEdit = this.memberDisplay.getElementsByClassName("memberdisplayEmail");
+                                                            for (let i = 0; i < elementsToEdit.length; i++) {
+                                                                elementsToEdit[i].innerHTML = this.member.email;
+                                                            }
+                                                            elementsToEdit = this.memberDisplay.getElementsByClassName("memberdisplayCredits");
+                                                            for (let i = 0; i < elementsToEdit.length; i++) {
+                                                                elementsToEdit[i].innerHTML = this.member.credit;
+                                                            }
+                                                            elementsToEdit = this.memberDisplay.getElementsByClassName("memberdisplayPoints");
+                                                            for (let i = 0; i < elementsToEdit.length; i++) {
+                                                                elementsToEdit[i].innerHTML = this.member.points;
+                                                            }
+                                                            this.searchDisplay.style.display = "none"
+                                                            this.memberDisplay.style.display = "block"
+                                                        },
+                                                        displaySearch: function () {
+                                                            this.searchDisplay.style.display = "block"
+                                                            this.memberDisplay.style.display = "none"
+                                                        },
+                                                        checkField: function (arg) {
+                                                            return arg != null && arg != undefined && arg != NaN;
+                                                        },
+                                                        checkAll: function () {
+                                                            return this.checkField(this.member.name)
+                                                                && this.checkField(this.member.surname)
+                                                                && this.checkField(this.member.email)
+                                                                && this.checkField(this.member.credit)
+                                                                && this.checkField(this.member.points)
+                                                        },
+                                                        //EVENTS
+                                                        setEventListeners: function () {
+                                                            let self = this;
+                                                            this.removeMemberBtn.addEventListener("click", function () {
+                                                                self.clear();
+                                                                self.displaySearch();
+                                                            });
+                                                        }
+                                                    };
+                                                    memberSection.setEventListeners();
+                                                    memberSection.clear();
+                                                    memberSection.displaySearch();
+                                                </script>
+                                            </div>
+                                        </div>
+                                        <div id="numericPad_Container" class=" col-12 p-1 flexiCenter ">
+                                            <div class="row p-0 m-0 flexiCenter">
+                                                <div class="position-relative col-auto  my-1 mx-3">
+                                                    <table id="numericPad"
+                                                        class="d-block p-3 smallStrongShadowRight rounded border"
+                                                        style="border-spacing: 3px !important" class="">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td colspan="4">
+                                                                    <input id="numPadField"
+                                                                        class="text-center form-control w-100 h-100"
+                                                                        value="" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">7</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">8</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">9</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadBackspaceBtn w-100 h-100 btn btn-sm btn-dark">
+                                                                        ←
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">4</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">5</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">6</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadClearBtn w-100 h-100 btn btn-sm btn-dark">
+                                                                        C
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">1</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">2</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">3</button>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="dropdown">
+                                                                        <button type="button"
+                                                                            class="w-100 h-100 btn btn-primary btn-sm small-font dropdown-toggle"
+                                                                            type="button" data-bs-toggle="dropdown"
+                                                                            onclick="filterTheZone(this.parentNode,numPad.field.value)">
+                                                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                                                        </button>
+                                                                        <ul class="dropdown-menu container"
+                                                                            id="productList">
+                                                                            <div
+                                                                                class="w-100 bg-primary text-white justify-content center align-items-center text-center">
+                                                                                "<span
+                                                                                    class="numPadOtherFields"></span>"
+                                                                            </div>
+                                                                        </ul>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2">
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">
+                                                                        0
+                                                                    </button>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                        class="numPadTypeBtn w-100 h-100 btn btn-outline-dark">.</button>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="dropdown">
+                                                                        <button
+                                                                            class="w-100 btn btn-sm btn-success dropdown-toggle"
+                                                                            type="button" onclick="return false;"
+                                                                            data-bs-toggle="dropdown"><i
+                                                                                class="fa-solid fa-money-check-dollar"></i>
+                                                                        </button>
+                                                                        <ul class="dropdown-menu container">
+                                                                            <table class="p-1 m-0 w-100 h-100">
+                                                                                <tr class="">
+                                                                                    <td class="align-items-center justify-content-center text-center text-bg-success"
+                                                                                        colspan="3">
+                                                                                        Paiements
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr class="dropdown-item"
+                                                                                    onclick='transactionSection.addPaymentLine("PAIEMENT CARTE",document.getElementsByClassName("numericPad-rappel")[0].innerText);'>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        <i
+                                                                                            class="fa-solid fa-credit-card"></i>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center px-2">
+                                                                                        <span
+                                                                                            class="numericPad-rappel numPadOtherFields"></span>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        €
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr class="dropdown-item"
+                                                                                    onclick='transactionSection.addPaymentLine("PAIEMENT ESPECES",document.getElementsByClassName("numericPad-rappel")[0].innerText);'>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        <i
+                                                                                            class="fa-solid fa-coins"></i>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center px-2">
+                                                                                        <span
+                                                                                            class="numericPad-rappel numPadOtherFields"></span>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        €
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr class="dropdown-item"
+                                                                                    onclick='transactionSection.addPaymentLine("PAIEMENT CREDIT",document.getElementsByClassName("numericPad-rappel")[0].innerText);'>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        <i
+                                                                                            class="fa-solid fa-wallet"></i>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center px-2">
+                                                                                        <span
+                                                                                            class="numericPad-rappel numPadOtherFields"></span>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        Crédits
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr class="dropdown-item"
+                                                                                    onclick='transactionSection.addPaymentLine("PAIEMENT POINTS",document.getElementsByClassName("numericPad-rappel")[0].innerText);'>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        <i class="fa-solid fa-star"></i>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center px-2">
+                                                                                        <span
+                                                                                            class="numericPad-rappel numPadOtherFields"></span>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="align-items-center justify-content-center">
+                                                                                        Points
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </table>
+                                                                        </ul>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <span
+                                                        class="py-0 px-2 ms-3 position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-white text-black">
+                                                        Pad numérique
+                                                    </span>
+                                                </div>
+
+                                                <div class="position-relative col-auto my-1 mx-5 ">
+                                                    <table
+                                                        class="d-block p-3 m-1 smallStrongShadowRight rounded border border border-3 border-success">
+                                                        <tr>
+                                                            <td>
+                                                                <button id="btnFinalizeTransaction"
+                                                                    class="btn btn-success btn-sm w-100 ">
+                                                                    Finaliser </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <div class="form-check form-switch">
+                                                                    <label class="form-check-label"
+                                                                        for="checkboxTicket">Imprimer ticket</label>
+                                                                    <input class="form-check-input" type="checkbox"
+                                                                        role="switch" id="checkboxTicket">
+                                                                </div>
+
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+
+                                                    <span
+                                                        class="py-0 px-2 ms-3 position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-white border border-3 border-success text-black">
+                                                        Finaliser
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <script>
+                                                let numPad = {
+                                                    //divers
+                                                    container: document.getElementById(
+                                                        "numericPad_Container"
+                                                    ),
+                                                    element: document.getElementById("numericPad"),
+                                                    field: document.getElementById("numPadField"),
+                                                    regex: /^[0-9]+(\.[0-9]+)?$/,
+                                                    defaultValue: "",
+                                                    //btns
+                                                    typingBtns:
+                                                        document.getElementsByClassName(
+                                                            "numPadTypeBtn"
+                                                        ),
+                                                    backspaceBtns:
+                                                        document.getElementsByClassName(
+                                                            "numPadBackspaceBtn"
+                                                        ),
+                                                    clearBtns:
+                                                        document.getElementsByClassName(
+                                                            "numPadClearBtn"
+                                                        ),
+                                                    otherFields:
+                                                        document.getElementsByClassName(
+                                                            "numPadOtherFields"
+                                                        ),
+                                                    //methodes
+                                                    write: function (arg) {
+                                                        this.field.value = this.field.value + "" + arg;
+                                                    },
+                                                    backspace: function () {
+                                                        if (this.field.value.length > 0) {
+                                                            this.field.value = this.field.value.slice(
+                                                                0,
+                                                                -1
+                                                            );
+                                                        }
+                                                    },
+                                                    clear: function () {
+                                                        this.field.value = this.defaultValue;
+                                                    },
+                                                    setOtherFields: function () {
+                                                        for (let i = 0; i < this.otherFields.length; i++) {
+                                                            this.otherFields[i].innerHTML = this.field.value;
+                                                        }
+                                                    },
+                                                    setOtherFields: function (arg) {
+                                                        for (let i = 0; i < this.otherFields.length; i++) {
+                                                            this.otherFields[i].innerHTML = arg;
+                                                        }
+                                                    },
+                                                    //EVENTS
+                                                    setEventListeners: function () {
+                                                        let self = this;
+                                                        //type
+                                                        for (let i = 0; i < this.typingBtns.length; i++) {
+                                                            this.typingBtns[i].addEventListener(
+                                                                "click",
+                                                                function () {
+                                                                    self.write(this.innerText);
+                                                                    self.setOtherFields(self.field.value);
+                                                                }
+                                                            );
+                                                        }
+                                                        //backspace
+                                                        for (
+                                                            let i = 0;
+                                                            i < this.backspaceBtns.length;
+                                                            i++
+                                                        ) {
+                                                            this.backspaceBtns[i].addEventListener(
+                                                                "click",
+                                                                function () {
+                                                                    self.backspace();
+                                                                    self.setOtherFields(self.field.value);
+                                                                }
+                                                            );
+                                                        }
+                                                        //clear
+                                                        for (
+                                                            let i = 0;
+                                                            i < this.clearBtns.length;
+                                                            i++
+                                                        ) {
+                                                            this.clearBtns[i].addEventListener(
+                                                                "click",
+                                                                function () {
+                                                                    self.clear();
+                                                                    self.setOtherFields(self.field.value);
+                                                                }
+                                                            );
+                                                        }
+
+                                                        // :(
+                                                        this.field.addEventListener("keyup", function () {
+                                                            self.setOtherFields(self.field.value);
+                                                        });
+                                                        this.field.addEventListener("change", function () {
+                                                            self.setOtherFields(self.field.value);
+                                                        });
+                                                        this.field.addEventListener("input", function () {
+                                                            self.setOtherFields(self.field.value);
+                                                        });
+                                                    }
+                                                };
+                                                numPad.setEventListeners();
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        function clearCaisse() {
+                            let container = document.getElementById('transactionLines');
+                            let btns = container.getElementsByClassName('');
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MENU NAV -->
+    <div class="bg-dark offcanvas offcanvas-start transitionForce" tabindex="-1" id="offcanvasNAV">
+        <div class=" offcanvas-header justify-content-center align-items-center pt-3 pb-3 px-4 m-0">
+            <div id="CLOSEMENU" class="p-2 d-flex justify-content-between align-content-center bg-black rounded">
+                <img src="../img/logo.jpg" class="m-1 rounded" style="height:3em;">
+                <img src="../img/nom.jpg" class="m-1 rounded" style="height:3em;">
+            </div>
+            <button id="CLOSEMENU" type="button" class="btn-close bg-light d-none" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <!-- CORPS OFFCANVAS -->
+        <div class="row justify-content-center bg-dark sidebar bgIsMain textIsMain text-white m-0 px-5 py-1">
+            <div class="col-12 p-0 m-0">
+                <div class="row my-2">
+                    <div class="col-12">
+                        <a href="#" class="row px-0 py-2 mx-0 my-1 btn btn-light d-flex border-bottom"
+                            data-bs-toggle="collapse" data-bs-target="#collapseDASHBOARD">
+                            <div class="col-4 p-0 m-0 flexiCenter">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            </div>
+                            <div class="col-8 p-0 m-0 justify-content-start text-start">
+                                <h5 class="p-0 m-1">Dashboard</h5>
+                            </div>
+                        </a>
+
+                        <div class="collapse" id="collapseDASHBOARD">
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('dashboard_gerant');
+                                document.getElementById('CLOSEMENU').click();">
+                                    Gérant
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('dashboard_employe');
+                                document.getElementById('CLOSEMENU').click();">
+                                    Employé
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div class="row my-4">
+                    <div class="col-12">
+                        <a href="#" class="row p-0 m-0 btn btn-dark d-flex border-bottom" data-bs-toggle="collapse"
+                            data-bs-target="#collapseMenuAdministration">
+                            <div class="col-4 p-0 m-0 flexiCenter">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <div class="col-8 p-0 m-0 justify-content-start text-start">
+                                <h5 class="p-0 m-1">Administration</h5>
+                            </div>
+                        </a>
+                        <div class="collapse" id="collapseMenuAdministration">
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_administration_directionregionale')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Direction régionale
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_administration_comptes')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Comptes/Mailing
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-12">
+                        <a href="#" class="row p-0 m-0 btn btn-dark d-flex border-bottom" data-bs-toggle="collapse"
+                            data-bs-target="#collapseMenuStocks">
+                            <div class="col-4 p-0 m-0 flexiCenter">
+                                <i class="fa-solid fa-boxes-stacked"></i>
+                            </div>
+                            <div class="col-8 p-0 m-0 justify-content-start text-start">
+                                <h5 class="p-0 m-1">Stocks</h5>
+                            </div>
+                        </a>
+                        <div class="collapse" id="collapseMenuStocks">
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_stocks_energies')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Energies
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_stocks_produits')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Produits
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_stocks_reappro')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Réapprovisionnements
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-12">
+                        <a href="#" class="row p-0 m-0 btn btn-dark d-flex border-bottom" data-bs-toggle="collapse"
+                            data-bs-target="#collapseMenuComptabilite">
+                            <div class="col-4 p-0 m-0 flexiCenter">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="col-8 p-0 m-0 justify-content-start text-start">
+                                <h5 class="p-0 m-1">Comptabilité</h5>
+                            </div>
+                        </a>
+                        <div class="collapse" id="collapseMenuComptabilite">
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_comptabilite_transactions')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Transactions
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_comptabilite_validation')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Validation
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-12">
+                        <a href="#" class="row p-0 m-0 btn btn-dark d-flex border-bottom" data-bs-toggle="collapse"
+                            data-bs-target="#collapseMenuIncidents">
+                            <div class="col-4 p-0 m-0 flexiCenter">
+                                <i class="fa-regular fa-flag"></i>
+                            </div>
+                            <div class="col-8 p-0 m-0 justify-content-start text-start">
+                                <h5 class="p-0 m-1">Incidents</h5>
+                            </div>
+                        </a>
+                        <div class="collapse" id="collapseMenuIncidents">
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_incidents_registre')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Registre
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_incidents_validation')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Validation
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-12">
+                        <a href="#" class="row p-0 m-0 btn btn-dark d-flex border-bottom" data-bs-toggle="collapse"
+                            data-bs-target="#collapseMenuClients">
+                            <div class="col-4 p-0 m-0 flexiCenter">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div class="col-8 p-0 m-0 justify-content-start text-start">
+                                <h5 class="p-0 m-1">Clients</h5>
+                            </div>
+                        </a>
+                        <div class="collapse" id="collapseMenuClients">
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_clients_services')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Formations
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_clients_avantages')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Avantages
+                                </div>
+                            </div>
+                            <div class="row p-0 m-0 d-flex opacity-75">
+                                <div class="col-2 p-0 m-0 text-center border-end"></div>
+                                <div class="col-10 p-0 m-0 btn btn-dark justify-content-start" onclick="DisplayManager.display('section_clients_membres')
+                                document.getElementById('CLOSEMENU').click();">
+                                    Membres
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-12">
+                        <div class="justify-content-between rounded border p-1 m-0 row">
+                            <div id="userNameFieldMenu" class="col-4 p-2 text-light">User</div>
+                            <div id="userRoleFieldMenu"
+                                class="col-4 p-1 rounded text-white text-bg-info d-flex align-items-center justify-content-center text-center">
+                                [rôle]
+                            </div>
+                            <div class="flexiCenter col-4 px-2">
+                                <div class="btn btn-light border px-2 py-1 text-dark m-1"
+                                    onclick="if(isGerant){ERPMODALS.open.modifier_compte(cashier.id)}else{alert('Vous n\'avez pas les droits suffisants !');}">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </div>
+                                <div class="btn btn-light border px-2 py-1 text-danger m-1" id="disconnectBtn">
+                                    <i class="fa-solid fa-power-off"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</body>
+<script>
+    /* helpers */
+    const containerERP = document.getElementById("CONTAINER-ERP");
+    const titlesERP = document.getElementById("TITLES-ERP");
+    const containerCAISSE = document.getElementById("CONTAINER-CAISSE");
+
+    function setTitlesContainer(argContainer, argSectionName, argSubsectionName) {
+        const sectionNames = argContainer.getElementsByClassName("sectionName");
+        const subsectionNames = argContainer.getElementsByClassName("subsectionName");
+        for (let i = 0; i < sectionNames.length; i++) {
+            sectionNames[i].innerText = argSectionName;
+        }
+        for (let i = 0; i < sectionNames.length; i++) {
+            subsectionNames[i].innerText = argSubsectionName;
+        }
+    }
+    function setTitlesERP(argSection, argSubsection) {
+        setTitlesContainer(document.getElementById("TITLES-ERP"), argSection, argSubsection);
+    }
+    function isNumber(value) {
+        return !isNaN(parseFloat(value)) && isFinite(value);
+    }
+</script>
+<script>
+    class Section {
+        constructor(elementId, title, subtitle, containerId, pageURL, description, accessForbidden) {
+            this.elementId = elementId;
+            this.title = title;
+            this.subtitle = subtitle;
+            this.element = undefined;
+            if ((containerId != null) && accessForbidden) {
+                this.element = this.createAccessAlertElement(elementId, containerId);
+            } else {
+                if (containerId == null || pageURL == null || description == null) {
+                    this.element = document.getElementById(elementId);
+                    this.element.classList.add('collapse', 'hide', 'transitionForce');
+                } else {
+                    this.element = this.createSectionElement(containerId, elementId, pageURL, description);
+                }
+            }
+            this.collapse = undefined;
+        }
+        initCollapseIfNot() {
+            if (this.collapse === undefined) {
+                this.collapse = new bootstrap.Collapse(this.element, {
+                    toggle: false
+                });
+                this.collapse.hide();
+            }
+        }
+        open() {
+            this.initCollapseIfNot();
+            this.collapse.show();
+            if (this.btnRefresh !== undefined) {
+                this.btnRefresh.click();
+            }
+        }
+        close() {
+            this.initCollapseIfNot();
+            this.collapse.hide();
+        }
+
+        set(arg) {
+            if (arg) {
+                this.open();
+            } else {
+                this.close();
+            }
+        }
+
+        toggle() {
+            this.collapse.toggle();
+        }
+        createAccessAlertElement(elementId, containerId) {
+            const container = document.getElementById(containerId);
+            const alertElement = document.createElement('div');
+            this.btnRefresh = undefined;
+            alertElement.id = elementId;
+            alertElement.classList.add('row', 'm-0', 'p-0', 'collapse', 'hide', 'transitionForce');
+            alertElement.innerHTML = `
+                <div class="alert alert-danger col-12  my-1 mx-0" role="alert">
+                    <h4 class="alert-heading">OOPS</h4>
+                    <p>Il semble que vous n'ayez pas accès à cette section</p>
+                    <hr>
+                    <p class="mb-0">Section en question :</p><span>${elementId}</span>
+                </div>
+            `;
+            container.appendChild(alertElement);
+            return alertElement;
+        }
+        createSectionElement(containerId, elementId, pageURL, description) {
+
+            const sectionElement = document.createElement('div');
+            sectionElement.id = elementId;
+            sectionElement.classList.add('row', 'm-0', 'p-0', 'collapse', 'hide', 'transitionForce');
+
+
+            const iframeContainer = document.createElement('div');
+            iframeContainer.classList.add('IFRAMECONTAINER', 'position-relative', 'col-12', 'my-3', 'mx-0', 'p-0');
+
+
+            const iframe = document.createElement('iframe');
+            iframe.src = pageURL;
+            iframe.classList.add('BASECONTAINER', 'ERPIFRAME', 'h-100', 'w-100');
+            iframe.scrolling = "auto";
+
+
+            const span = document.createElement('span');
+            span.classList.add('position-absolute', 'top-0', 'start-0', 'translate-middle-y', 'badge', 'py-0', 'px-2', 'm-0');
+
+            const spanInner = document.createElement('span');
+            spanInner.classList.add('p-1', 'bg-white', 'text-black', 'border', 'border-secondary', 'rounded', 'fst-italic');
+            spanInner.textContent = description;
+
+            span.appendChild(spanInner);
+
+            this.btnRefresh = document.createElement('button');
+            this.btnRefresh.classList.add('btn', 'btn-sm', 'btn-primary', 'position-absolute', 'top-0', 'm-0', 'end-0', 'translate-middle');
+            this.btnRefresh.setAttribute('onclick', "this.parentNode.getElementsByTagName('iframe')[0].setAttribute('src', '" + pageURL + "');");
+            const btnRefreshInner = document.createElement('i');
+            btnRefreshInner.classList.add('fa-solid', 'fa-rotate');
+            this.btnRefresh.appendChild(btnRefreshInner);
+
+            iframeContainer.appendChild(iframe);
+            iframeContainer.appendChild(span);
+            iframeContainer.appendChild(this.btnRefresh);
+            sectionElement.appendChild(iframeContainer);
+
+
+            const container = document.getElementById(containerId);
+            sectionElement.setAttribute('onload', 'this.collapse.hide()');
+            container.appendChild(sectionElement);
+
+            return sectionElement;
+        }
+    }
+
+    const DisplayManager = {
+        dashboard_gerant: new Section(
+            "dashboard_gerant",
+            "Dashboard",
+            "Gérant",
+            "CONTAINER-ERP",
+            "dashboard_gerant.html",
+            "Interface de visualisation et actions rapides (gérant) ",
+            !isGerant
+        ),
+        dashboard_employe: new Section(
+            "dashboard_employe",
+            "Dashboard",
+            "Employé",
+            "CONTAINER-ERP",
+            "dashboard_employe.html",
+            "Interface de visualisation et actions rapides (employé) ",
+            false
+        ),
+        section_administration_directionregionale: new Section(
+            "section_administration_directionregionale",
+            "Administration",
+            "Direction régionale",
+            "CONTAINER-ERP",
+            "erp_administration_directionregionale.html",
+            "Visualiser et enregistrer des documents de communication avec la direction régionale",
+            false
+        ),
+        section_administration_comptes: new Section(
+            "section_administration_comptes",
+            "Administration",
+            "Direction régionale",
+            "CONTAINER-ERP",
+            "erp_administration_comptes.html",
+            "Gestion des comptes , demandes, et communication interne",
+            !isGerant
+        ),
+        section_stocks_energies: new Section(
+            "section_stocks_energies",
+            "Stocks",
+            "Energies",
+            "CONTAINER-ERP",
+            isGerant ? "erp_stocks_energies_gerant.html" : "erp_stocks_energies_employe.html",
+            "Visualisation , modification et gestion des energies dans la base de données.",
+            false
+        ),
+        section_stocks_produits: new Section(
+            "section_stocks_produits",
+            "Stocks",
+            "Energies",
+            "CONTAINER-ERP",
+            isGerant ? "erp_stocks_produits_gerant.html" : "erp_stocks_produits_employe.html",
+            "Visualisation , modification et gestion des produits dans la base de données.",
+            false
+        ),
+        section_stocks_reappro: new Section(
+            "section_stocks_reappro",
+            "Stocks",
+            "Réapprovisionnements",
+            "CONTAINER-ERP",
+            isGerant ? "erp_stocks_reappro_gerant.html" : "erp_stocks_reappro_employe.html",
+            "Gestion création et actualisation des demandes de réapprovisionnements.",
+            false
+        ),
+        section_comptabilite_transactions: new Section(
+            "section_comptabilite_transactions",
+            "Comptabilité",
+            "Transactions",
+            "CONTAINER-ERP",
+            "erp_comptabilite_transactions.html",
+            "Visualisation des transactions et leur détail dans la base de données.",
+            !isGerant
+        ),
+        section_comptabilite_validation: new Section(
+            "section_comptabilite_validation",
+            "Comptabilité",
+            "Validation",
+            "CONTAINER-ERP",
+            "erp_comptabilite_validation.html",
+            "Validation des transactions effectuées.",
+            !isGerant
+        ),
+        section_incidents_registre: new Section(
+            "section_incidents_registre",
+            "Incidents",
+            "Registre",
+            "CONTAINER-ERP",
+            "erp_incidents_registre_employe.html",
+            "Registre des incidents enregistrés.",
+            false
+        ),
+        section_incidents_validation: new Section(
+            "section_incidents_validation",
+            "Incidents",
+            "Validation",
+            "CONTAINER-ERP",
+            "erp_incidents_registre_validation.html",
+            "Validation des incidents résolus.",
+            !isGerant
+        ),
+        section_clients_services: new Section(
+            "section_clients_services",
+            "Clients",
+            "Formations",
+            "CONTAINER-ERP",
+            "erp_formations.html",
+            "Gérer les formations mis à dispositions pour les membres.",
+            false
+        ),
+        section_clients_avantages: new Section(
+            "section_clients_avantages",
+            "Clients",
+            "Avantages",
+            "CONTAINER-ERP",
+            "erp_clients_avantages.html",
+            "Definir les avantages accordés aux clients membres",
+            !isGerant
+        ),
+        section_clients_membres: new Section(
+            "section_clients_membres",
+            "Clients",
+            "Membres",
+            "CONTAINER-ERP",
+            "erp_clients_membres.html",
+            "Rechercher des clients dans la base de données, contacter, modifier, supprimer.",
+            false
+        ),
+
+        OpenAndTitle: function (argSection) {
+            argSection.open();
+            setTitlesERP(argSection.title, argSection.subtitle);
+        },
+        SetIfCorrectAndTitle: function (argSection, argRequest) {
+            if (argRequest == argSection.elementId) {
+                this.OpenAndTitle(argSection);
+            } else {
+                argSection.close();
+            }
+        },
+        // mainly for debugging
+        OPENALL: function () {
+            setTitlesERP("ERP", "Tout");
+            this.dashboard_gerant.open();
+            this.dashboard_employe.open();
+            this.section_administration_directionregionale.open();
+            this.section_administration_comptes.open();
+            this.section_stocks_energies.open();
+            this.section_stocks_produits.open();
+            this.section_stocks_reappro.open();
+            this.section_comptabilite_transactions.open();
+            this.section_comptabilite_validation.open();
+            this.section_incidents_registre.open();
+            this.section_incidents_validation.open();
+            this.section_clients_services.open();
+            this.section_clients_avantages.open();
+            this.section_clients_membres.open();
+        },
+        display: function (argRequest) {
+
+            setTitlesERP("ERP", "Vide");//will actually show if the request doesn't match a section id
+
+            this.SetIfCorrectAndTitle(this.dashboard_gerant, argRequest);
+            this.SetIfCorrectAndTitle(this.dashboard_employe, argRequest);
+            this.SetIfCorrectAndTitle(this.section_administration_directionregionale, argRequest);
+            this.SetIfCorrectAndTitle(this.section_administration_comptes, argRequest);
+            this.SetIfCorrectAndTitle(this.section_stocks_energies, argRequest);
+            this.SetIfCorrectAndTitle(this.section_stocks_produits, argRequest);
+            this.SetIfCorrectAndTitle(this.section_stocks_reappro, argRequest);
+            this.SetIfCorrectAndTitle(this.section_comptabilite_transactions, argRequest);
+            this.SetIfCorrectAndTitle(this.section_comptabilite_validation, argRequest);
+            this.SetIfCorrectAndTitle(this.section_incidents_registre, argRequest);
+            this.SetIfCorrectAndTitle(this.section_incidents_validation, argRequest);
+            this.SetIfCorrectAndTitle(this.section_clients_services, argRequest);
+            this.SetIfCorrectAndTitle(this.section_clients_avantages, argRequest);
+            this.SetIfCorrectAndTitle(this.section_clients_membres, argRequest);
+        }
+    };
+    DisplayManager.display(isGerant ? "dashboard_gerant" : "dashboard_employe");
+</script>
+
+
+
+
+<script>
+    //script pour l'envoie de transaction
+    //on recupere les elements
+    let btnFinalizeTransaction = document.getElementById("btnFinalizeTransaction");
+    //tous les items sont dans transactionSection, c'est la classe transactionLine pour chaque ligne
+    //def sur l'appui du bouton l'action
+    btnFinalizeTransaction.addEventListener("click", function () {
+        jsonItems = transactionSection.getJsonItems();
+        getJsonEnergy = transactionSection.getJsonEnergy();
+        jsonPayments = transactionSection.getJsonPayment();
+        member = memberSection.member;
+        console.log(jsonItems);
+        console.log(jsonPayments);
+        console.log(member.id);
+        //pour le caissier, c'est stocké dans sessionStorage
+        if (!confirm("voulez vous finaliser cette transaction ? - [" + (jsonItems.length + jsonItems.length) + " produit(s)] - [" + jsonPayments.length + " paiement(s)]")) {
+            return;
+        }
+        sendTransaction();
+        transactionSection.clear();
+    });
+
+    function sendTransaction() {
+        // Récupérer les éléments nécessaires
+        let numPadField = document.getElementById("numPadField");
+        let memberId = document.getElementById("memberId");
+        let checkboxTicket = document.getElementById("checkboxTicket");
+
+        // Récupérer les données de la transaction
+        let jsonItems = transactionSection.getJsonItems();
+        let getJsonEnergy = transactionSection.getJsonEnergy();
+        let jsonPayments = transactionSection.getJsonPayment();
+        let member = memberSection.member;
+        let cashier = JSON.parse(sessionStorage.getItem("user"));
+        let amount = transactionSection.getTotalAmount();
+
+        // Initialiser les modes de paiement avec une valeur par défaut de 0
+        let paymentAmounts = {
+            "CREDIT_CARD": 0.0,
+            "CASH": 0.0,
+            "ENERGY_CREDIT_CARD": 0.0,
+            "POINTS": 0.0
+        };
+
+        // Initialiser les produits avec une quantité par défaut de 0
+        let productQuantities = {};
+        let energiesQuantities = {};
+
+        // Mettre à jour les montants des modes de paiement
+        jsonPayments.forEach(payment => {
+            const price = parseFloat(payment.price);
+            //si le nom du paiement contient carte, on ajoute a amout
+            if (payment.name.includes("CARTE")) {
+                //on recupere payment.price qu'on met en float
+                paymentAmounts.CREDIT_CARD += price;
+            }
+            //si le nom du paiement contient espece, on ajoute a amout
+            if (payment.name.includes("ESPECES")) {
+                paymentAmounts.CASH += price;
+            }
+            //si le nom du paiement contient credit, on ajoute a amout
+            if (payment.name.includes("CREDIT")) {
+                paymentAmounts.ENERGY_CREDIT_CARD += price;
+            }
+            //si le nom du paiement contient points, on ajoute a amout
+            if (payment.name.includes("POINTS")) {
+                paymentAmounts.POINTS += price;
+            }
+        });
+
+        // Construire l'objet des produits avec leurs quantités
+        jsonItems.forEach(item => {
+            productQuantities[item.name] = item.quantity;
+        });
+
+        getJsonEnergy.forEach(energy => {
+            energiesQuantities[energy.name] = energy.quantity;
+        });
+
+        let idMember;
+        if (member.id == null) {
+            idMember = -1;
+        } else {
+            idMember = member.id;
+        }
+
+        // Construire l'objet de la transaction
+        let transactionData = {
+            "mail": cashier.mail === undefined ? "alexislegrosnc@gmail.com" : cashier.mail,
+            "customerId": idMember,
+            "date": new Date().toISOString().slice(0, 16),
+            "amount": amount,
+            "payment": paymentAmounts,
+            "products": productQuantities,
+            "energies": energiesQuantities
+        };
+
+        console.log(transactionData);
+
+        // Envoyer la requête POST à l'API
+        fetch(URL_SERVER_NAME + '/api/crt/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(transactionData)
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Transaction successfully sent.');
+                    // Effacer les données de la transaction après l'envoi
+                    if (checkboxTicket.checked) {
+                        // Imprimer le ticket
+                        console.log('Printing ticket...');
+                        generatePDF(transactionData);
+                    }
+                    transactionSection.clearItems();
+                    // Ajouter d'autres actions si nécessaire
+                } else {
+                    console.error('Failed to send transaction.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // Fonction pour récupérer les essences depuis l'API
+    function getEssences() {
+        console.log('Fetching essences from the API...');
+        const requestEssences = new XMLHttpRequest();
+        requestEssences.open('GET', URL_SERVER_NAME + '/api/energy/all', true);
+        requestEssences.onload = function () {
+            console.log('Essences fetched successfully.');
+            if (requestEssences.status >= 200 && requestEssences.status < 400) {
+                const essences = JSON.parse(requestEssences.responseText);
+                essences.forEach(essence => {
+                    addDropdownItem(essence.name, essence.price, 'l.', 'essence', 1, true);
+                });
+            } else {
+                console.error('Failed to fetch essences from the API.');
+            }
+        };
+        requestEssences.onerror = function () {
+            console.error('There was a network error.');
+        };
+        requestEssences.send();
+    }
+
+    let dictionnaireProduitsPoids = {};
+
+    // Fonction pour récupérer les produits depuis l'API
+    function getProducts() {
+        console.log('Fetching products from the API...');
+        const requestProducts = new XMLHttpRequest();
+        requestProducts.open('GET', URL_SERVER_NAME + '/api/product/all', true);
+        requestProducts.onload = function () {
+            if (requestProducts.status >= 200 && requestProducts.status < 400) {
+                console.log('Products fetched successfully.');
+                const products = JSON.parse(requestProducts.responseText);
+                products.forEach(product => {
+                    addDropdownItem(product.name, product.price, 'U', 'product', product.weight, false);
+                    dictionnaireProduitsPoids[product.name] = product.weight;
+                });
+            } else {
+                console.error('Failed to fetch products from the API.');
+            }
+        };
+        requestProducts.onerror = function () {
+            console.error('There was a network error.');
+        };
+        requestProducts.send();
+    }
+
+    // Fonction pour ajouter un élément au menu déroulant de la caisse
+    function addDropdownItem(name, price, unit, type, weight, isEnergy) {
+        const dropdownMenu = document.getElementById('productList');
+        const li = document.createElement('li');
+        li.setAttribute('data-name', name);
+        li.setAttribute('data-unit', unit);
+        li.setAttribute('data-price', price);
+        li.setAttribute('data-weight', weight);
+        li.setAttribute('data-isEnergy', isEnergy);
+        li.classList.add('filteredElement');
+        li.onclick = function () {
+            transactionSection.addProductLine(this.getAttribute('data-name'), 1, this.getAttribute('data-unit'), this.getAttribute('data-price'), this.getAttribute('data-weight'), this.getAttribute('data-isEnergy'));
+        };
+        const span = document.createElement('span');
+        span.classList.add('position-absolute', 'top-0', 'start-0', 'translate-middle', 'badge', 'pt-3', 'ps-5', 'm-0', 'text-info');
+        span.textContent = price;
+        li.appendChild(span);
+        const a = document.createElement('a');
+        a.classList.add('dropdown-item');
+        a.href = '#';
+        if (type === 'product') {
+            a.innerHTML = '<i class="fa-solid fa-box"></i> ' + name;
+        } else {
+            a.innerHTML = '<i class="fa-solid fa-gas-pump"></i> ' + name;
+        }
+        li.appendChild(a);
+        dropdownMenu.appendChild(li);
+    }
+
+    // Appel des fonctions pour récupérer les essences et les produits
+    getEssences();
+    getProducts();
+
+
+</script>
+
+<script> // script members
+    console.log('Fetching members from the API...');
+    let requestMembersCashRegister = new XMLHttpRequest();
+    let memberDatas;
+    requestMembersCashRegister.open('GET', URL_SERVER_NAME + '/api/customer/all', true);
+    requestMembersCashRegister.onload = function () {
+        fetchMembers();
+    };
+
+    function fetchMembers() {
+        if (requestMembersCashRegister.status >= 200 && requestMembersCashRegister.status < 400) {
+            console.log('Members fetched successfully.');
+            memberDatas = JSON.parse(requestMembersCashRegister.responseText);
+            populateDropdownMenu(memberDatas);
+        } else {
+            console.error('Failed to fetch data from the API.');
+        }
+    }
+
+    requestMembersCashRegister.onerror = function () {
+        console.error('There was a network error.');
+    };
+
+    requestMembersCashRegister.send();
+
+    function populateDropdownMenu(data) {
+        const dropdownMenu = document.getElementById('MemberSearchDropdownMenu');
+
+        dropdownMenu.innerHTML = '<input type="text" class="form-control" placeholder="Doe John" onkeyup="filterTheZone(this.parentNode,this.value)"/>';
+
+        data.forEach(member => {
+            const fullName = `${member.firstName} ${member.lastName}`;
+            const listItem = document.createElement('li');
+            listItem.setAttribute("filterstring", " " + member.customerId + " " + member.firstName + " " + member.lastName + " " + member.mail + " " + member.points + " " + member.points);
+            listItem.classList.add('dropdown-item', 'filteredElement');
+            listItem.textContent = fullName;
+            listItem.addEventListener('click', function () {
+                memberSection.set(member.customerId, member.firstName, member.lastName, member.mail, member.points, member.points, true);
+            });
+            dropdownMenu.appendChild(listItem);
+        });
+    }
+
+    document.getElementById('openDropdownButton').addEventListener('click', function () {
+        actualiserMembres();
+    });
+
+    function actualiserMembres() {
+        requestMembersCashRegister = new XMLHttpRequest();
+        requestMembersCashRegister.open('GET', URL_SERVER_NAME + '/api/customer/all', true);
+        requestMembersCashRegister.onload = function () {
+            fetchMembers();
+        };
+        requestMembersCashRegister.onerror = function () {
+            console.error('There was a network error.');
+        };
+        fetchMembers();
+        requestMembersCashRegister.send();
+    }
+
+</script>
+
+<script>
+
+    discoBtn = document.getElementById("disconnectBtn");
+    discoBtn.addEventListener("click", function () {
+        disconnect();
+    });
+
+    function disconnect() {
+        sessionStorage.removeItem("user");
+        window.location.href = "page_connexion.html";
+    }
+
+</script>
+
+<script>
+    userNameFieldMenu = document.getElementById("userNameFieldMenu");
+    userRoleFieldMenu = document.getElementById("userRoleFieldMenu");
+    user = JSON.parse(sessionStorage.getItem("user"));
+    if (user != null) {
+        userNameFieldMenu.innerText = user.firstName + " " + user.lastName;
+        userRoleFieldMenu.innerText = user.admin ? "Gérant" : "Employé";
+    }
+</script>
+
+<script>
+    function generatePDF(transactionData) {
+        const doc = new jsPDF();
+
+        let y = 10;
+
+        doc.text(`Date de la transaction: ${transactionData.date}`, 10, y);
+        y += 10;
+        doc.text(`Email de l'employé: ${transactionData.mail}`, 10, y);
+        y += 10;
+        doc.text(`Montant total: ${transactionData.amount} €`, 10, y);
+        y += 10;
+
+        doc.text('Moyen(s) de paiement:', 10, y);
+        Object.entries(transactionData.payment).forEach(([method, amount]) => {
+            if (amount > 0) {
+                y += 10;
+                doc.text(`${method} : ${amount} €`, 15, y);
+            }
+        });
+
+        y += 10;
+        doc.text('Produits achetés :', 10, y);
+        Object.entries(transactionData.products).forEach(([product, quantity]) => {
+            y += 10;
+            doc.text(`${product} : ${quantity}`, 15, y);
+        });
+
+        doc.save('transaction-ticket.pdf');
+        doc.output('bloburi', { filename: 'transaction-ticket.pdf' }).then((pdfBlobUrl) => {
+            window.open(pdfBlobUrl, '_blank');
+        });
+    }
+
+    let ticketCheckbox = false
+
+    document.getElementById('checkboxTicket').addEventListener('change', function () {
+        ticketCheckbox = !ticketCheckbox
+    });
+
+</script>
+
+</html>

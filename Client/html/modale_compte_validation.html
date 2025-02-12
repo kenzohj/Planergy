@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liste des employés</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
+
+<body>
+    <div class="container mt-5">
+        <ul id="employeeList" class="list-group mt-3"></ul>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchEmployeeData();
+        });
+
+        function fetchEmployeeData() {
+            fetch(URL_SERVER_NAME + "/api/employee/all")
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch employee data");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log(data);
+                    const employeeList = document.getElementById("employeeList");
+                    employeeList.innerHTML = "";
+
+                    data.forEach((employee) => {
+                        const listItem = document.createElement("li");
+                        listItem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+                        listItem.textContent = `${employee.firstName} ${employee.lastName}`;
+
+                        if (employee.validated) {
+                            listItem.style.borderLeft = "3px solid green";
+                        } else {
+                            const validateButton = document.createElement("button");
+                            validateButton.textContent = "Valider";
+                            validateButton.classList.add("btn", "btn-primary", "validate-btn");
+                            validateButton.dataset.mail = employee.mail;
+                            validateButton.onclick = validateEmployee;
+                            listItem.appendChild(validateButton);
+                        }
+
+                        employeeList.appendChild(listItem);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching employee data:", error);
+                });
+        }
+
+        function validateEmployee(event) {
+            const mail = event.target.dataset.mail;
+            console.log("Validating employee:", mail);
+            fetch(URL_SERVER_NAME + "/api/employee/validate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: mail,
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        console.log("Employee validated successfully");
+                        fetchEmployeeData();
+                    } else {
+                        throw new Error("Failed to validate employee");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error validating employee:", error);
+                });
+        }
+    </script>
+</body>
+
+</html>

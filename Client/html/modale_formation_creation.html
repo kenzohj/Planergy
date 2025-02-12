@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ERP - SAE4</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- nous -->
+    <link rel="stylesheet" href="../css/base.css" />
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+    <script>
+        /* generate with spring using session credentials ?*/
+        const isGerant = true;
+        const USERID = 1;
+    </script>
+</head>
+
+<body class="bgIsBlackPage">
+    <div class="flexiCenter m-0 py-0 px-2 overflow-y-auto" style="height: 100vh !important; width: 100vw !important;">
+        <form class="bgIsWhitePage container align-items-center p-2 border-black border-2 border rounded">
+            <div class="form-row">
+                <div class="form-group col">
+                    <label for="type">Type</label>
+                    <input type="text" class="form-control shadow" id="type" placeholder="Formation" />
+                </div>
+                <div class="form-group col">
+                    <label for="employe">Employé</label>
+                    <select class="form-control shadow" id="employe">
+                        <option value="">Sélectionnez un employé</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group col">
+                <label for="dateD">Date de début</label>
+                <input type="date" class="form-control shadow" id="dateD" placeholder="01/02/2024" />
+            </div>
+            <div class="form-group col">
+                <label for="dateF">Date de fin</label>
+                <input type="date" class="form-control shadow" id="dateF" placeholder="01/02/2024" />
+            </div>
+            <hr />
+            <div class="row p-0 m-0">
+                <div class="col-12 text-end p-0 m-0">
+                    <button type="submit" class="ms-1 btn btn-success" id="ajouter">Ajouter formation</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+<script>
+    function fetchData() {
+        fetch(URL_SERVER_NAME + "/api/employee/all", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                fillDropdown(data);
+            })
+            .catch((error) => {
+                console.error("Une erreur s'est produite lors de la récupération des données :", error);
+            });
+    }
+
+    function fillDropdown(data) {
+        const selectMenu = document.getElementById("employe");
+        selectMenu.innerHTML = '<option value="">Sélectionnez une option</option>';
+
+        data.forEach((item) => {
+            const option = document.createElement("option");
+            option.value = item.firstName + " " + item.lastName;
+            option.text = item.mail;
+            selectMenu.appendChild(option);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchData);
+</script>
+
+<script>
+    function getFormData() {
+        const mail = document.getElementById("employe").value;
+        const type = document.getElementById("type").value;
+        const startDate = document.getElementById("dateD").value;
+        const endDate = document.getElementById("dateF").value;
+
+        return { mail, type, startDate, endDate };
+    }
+
+    function sendPostRequest() {
+        const url = URL_SERVER_NAME + "/api/course/create";
+        const data = getFormData();
+
+        const options = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        };
+
+        console.log("Sending POST request to:", url);
+        console.log("Request data:");
+        console.log(data);
+
+        fetch(url, options)
+            .then((response) => {
+                if (response.ok) {
+                    alert("Formation créé avec succès");
+                    const successMessage = document.createElement("div");
+                    successMessage.classList.add("alert", "alert-success");
+                    successMessage.textContent = "Formation créé avec succès";
+                    document.querySelector(".modal-body").appendChild(successMessage);
+                } else {
+                    throw new Error("Failed to create Course");
+                }
+            })
+            .catch((error) => {
+                console.error("Error creating Course:", error.message);
+            });
+    }
+
+    buttonSend = document.getElementById("ajouter");
+    buttonSend.addEventListener("click", (event) => {
+        event.preventDefault();
+        sendPostRequest();
+    });
+</script>
+
+</html>

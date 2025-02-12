@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Layout Transaction</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="bgIsWhitePage container-fluid text-center p-3">
+    <table class="table">
+        <thead>
+            <tr>
+                <td colspan="3" rowspan="1" class="text-start m-0 px-0 pt-1 pb-2">
+                    <span class="rounded justify-content-between border text-black px-2 w-auto"
+                        onclick="this.getElementsByTagName('input')[0].click()">
+                        <input type="checkbox"
+                            onclick="event.stopPropagation();setAllCheckBoxes(this.checked,'productCheckBox');" />
+                        <span class="d-none d-md-inline">tout</span>&nbsp;selectionner
+                    </span>
+                </td>
+                <th colspan="3" rowspan="1" class="m-0 py-1">
+                    <div class="input-group w-100 justify-content-center">
+                        <input class="form-control-sm text-light border-0 border-dark rounded-start-pill bg-dark"
+                            style="width: 80% !important;" placeholder="Filtre textuel (tous les champs)"
+                            onkeyup="filterTheZone2(document.getElementById('productsRows'),this.value)" />
+                        <div
+                            class="input-group-text m-0 py-0 px-1 bg-dark border-dark rounded-end-pill px-2 text-white">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody class="text-start" id="productsRows">
+            <!-- PRODUCT ROWS -->
+        </tbody>
+    </table>
+</body>
+<script>
+    let productsTable = {
+        rowsContainer: document.getElementById("productsRows"),
+
+        addRow: function (argId, argNum, argPrice, argDate, argDescription, argNomEmploye) {
+            //<tr>
+            let newRow = document.createElement("tr");
+            newRow.setAttribute("colspan", "4");
+            newRow.setAttribute("filterString", `${argId} ${argNum} ${argPrice} ${argDate} ${argDescription} ${argNomEmploye}`);
+            newRow.classList.add("filteredElement");
+
+            // checkbox
+            let checkboxCell = document.createElement("td");
+            checkboxCell.setAttribute("colspan", "1");
+            checkboxCell.classList.add("col");
+            checkboxCell.innerHTML = `<input type="checkbox" class="productCheckBox" data-id="${argId}" />`;
+            newRow.appendChild(checkboxCell);
+
+            // Cellules pour les autres données
+            let dataCells = [
+                { text: argNum, label: "Num. Transaction" },
+                { text: argPrice, label: "Montant" },
+                { text: argDate, label: "Date" },
+            ];
+
+            dataCells.forEach((cellData) => {
+                let dataCell = document.createElement("td");
+                dataCell.classList.add("col");
+                dataCell.innerHTML = `
+                <span class="text-black position-relative fw-bold ${cellData.hideWhenNarrow == "true" ? "d-none d-md-inline" : ""}">${cellData.text}
+                    <span class="position-absolute top-0 start-0 translate-middle-y badge p-0 pb-1 m-0 text-secondary">${cellData.label}</span>
+                </span>
+            `;
+                newRow.appendChild(dataCell);
+            });
+
+            let validateBadge = document.createElement("span");
+            validateBadge.classList.add("badge", "bg-success", "text-white");
+            validateBadge.id = `validateBadge-${argId}`;
+            validateBadge.textContent = "Validé";
+
+            let arrowCell = document.createElement("td");
+            arrowCell.classList.add("col");
+            arrowCell.appendChild(validateBadge);
+
+            let arrowButton = document.createElement("button");
+            arrowButton.classList.add("btn", "btn-link", "text-dark", "arrow-btn");
+            arrowButton.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+            arrowButton.setAttribute("data-bs-toggle", "collapse");
+            arrowButton.setAttribute("data-bs-target", `#description-${argId}`);
+            arrowButton.addEventListener("click", function () {
+                toggleDescription(this);
+                toggleArrowIcon(this);
+            });
+
+            arrowCell.appendChild(arrowButton);
+            newRow.appendChild(arrowCell);
+
+            this.rowsContainer.appendChild(newRow);
+
+            let descriptionRow = document.createElement("tr");
+            descriptionRow.classList.add("incident-description", "collapse");
+            let descriptionCell = document.createElement("td");
+            descriptionCell.setAttribute("colspan", "7");
+            descriptionCell.innerHTML = `${argDescription}
+                <div class="mt-3">
+                    <p>Employé : ${argNomEmploye}</p>
+                    <button type="button" class="btn btn-outline-danger">Invalider</button>
+                    <button type="button" class="btn btn-outline-success">Valider</button>
+                </div>`;
+            descriptionRow.appendChild(descriptionCell);
+            descriptionRow.setAttribute("id", `description-${argId}`);
+            descriptionRow.style.display = "none";
+            newRow.after(descriptionRow);
+        },
+
+        clear: function () {
+            this.rowsContainer.innerHTML = "";
+        },
+        fetch: function () {
+            fetch(URL_SERVER_NAME + "/api/crt/all")
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch transaction data");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    data.forEach((transaction) => {
+                        // Add transaction details to the table
+                        this.addRow(
+                            transaction.transactionId,
+                            transaction.transactionId,
+                            transaction.amount + " €",
+                            transaction.date.slice(0, 10), // Extracting only the date part
+                            "Détail du ticket",
+                            transaction.mail
+                        );
+                        //afficher validé ou non
+                        //recup le validateBadge
+                        let validateBadge = document.getElementById(`validateBadge-${transaction.transactionId}`);
+                        //si la transaction est validée
+                        if (transaction.validated) {
+                            validateBadge.classList.remove("bg-warning");
+                            validateBadge.classList.add("bg-success");
+                            validateBadge.textContent = "Validé";
+                        } else {
+                            validateBadge.classList.remove("bg-success");
+                            validateBadge.classList.add("bg-warning");
+                            validateBadge.textContent = "En attente";
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching transaction data:", error);
+                });
+        },
+    };
+    function setAllCheckBoxes(argState, checkBoxesClass) {
+        const checkboxes = document.getElementsByClassName(checkBoxesClass);
+        let checkbox;
+        for (let i = 0; i < checkboxes.length; i++) {
+            checkbox = checkboxes[i];
+            if (checkbox.checked !== argState) {
+                checkbox.click();
+                checkbox.checked = argState;
+            }
+        }
+    }
+
+    function toggleDescription(button) {
+        let descriptionDiv = button.parentElement.parentElement.nextElementSibling;
+        if (descriptionDiv.style.display === "none") {
+            descriptionDiv.style.display = "table-row";
+        } else {
+            descriptionDiv.style.display = "none";
+        }
+    }
+
+    function toggleArrowIcon(button) {
+        let icon = button.querySelector("i");
+        icon.classList.toggle("fa-arrow-down");
+        icon.classList.toggle("fa-arrow-up-long");
+    }
+</script>
+
+<script>
+    productsTable.fetch();
+</script>
+
+</html>

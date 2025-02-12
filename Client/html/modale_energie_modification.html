@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP - SAE4</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- nous -->
+    <link rel="stylesheet" href="../css/base.css" />
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+</head>
+
+<body class="bgIsBlackPage">
+<div class="flexiCenter m-0 py-0 px-2 overflow-y-auto" style="height: 100vh !important; width: 100vw !important;">
+    <form class="bgIsWhitePage container align-items-center p-2 border-black border-2 border rounded">
+        <!-- set the form's url -->
+        <!-- form content -->
+        <div class="form-group">
+            <label for="price">Prix</label>
+            <input type="text" class="form-control shadow" id="price" placeholder="100€" />
+        </div>
+        <div class="form-group">
+            <label for="quantity">Quantité </label>
+            <input type="text" class="form-control shadow" id="quantity" placeholder="0" />
+        </div>
+        <div class="form-group">
+            <label for="limit">Seuil d'alerte </label>
+            <input type="text" class="form-control shadow" id="limit" placeholder="1000" />
+        </div>
+        <hr />
+        <div class="row text-end m-0 p-0">
+            <div class="col-12">
+                <div type="submit" class="btn btn-success" id="BtnModifEnergie">Modifier énergie</div>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+
+<script>
+    // Récupérer l'id du produit à modifier depuis l'URL
+    const currentUrl = window.location.href;
+    const idIndex = currentUrl.indexOf("&id=");
+    const idStartIndex = idIndex + 4;
+    const productId = currentUrl.substring(idStartIndex);
+
+    function getFormData() {
+        const price = document.getElementById("price").value;
+        const quantity = document.getElementById("quantity").value;
+        const limit = document.getElementById("limit").value;
+
+        return { productId, price, quantity, limit };
+    }
+
+    function sendPostRequest() {
+        const url = URL_SERVER_NAME + "/api/energy/update";
+        const data = getFormData();
+
+        const options = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                "name" : productId,
+                "price" : data.price,
+                "quantity" : data.quantity,
+                "limit" : data.limit
+            })
+        };
+
+        console.log("Sending POST request to:", url);
+        console.log("Request data:", data);
+
+        fetch(url, options)
+            .then((response) => {
+                if (response.ok) {
+                    alert("Energie modifié avec succès !");
+                } else {
+                    alert("Erreur lors de la modification de l'énergie")
+                    throw new Error("Failed to modify Energy");
+                }
+            })
+            .catch((error) => {
+                console.error("Error modifying Energy:", error.message);
+            });
+    }
+
+    const submitButton = document.getElementById("BtnModifEnergie");
+    submitButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        sendPostRequest();
+    });
+
+</script>
+
+</html>

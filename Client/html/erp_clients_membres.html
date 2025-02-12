@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title></title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+
+    <link rel="stylesheet" href="../css/base.css" />
+
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="bgIsWhitePage container-fluid text-center p-3">
+    <table class="table">
+        <thead>
+            <tr>
+                <td colspan="3" rowspan="1" class="text-start m-0 px-0 pt-1 pb-2">
+                    <span class="rounded justify-content-between border text-black px-2 w-auto"
+                        onclick="this.getElementsByTagName('input')[0].click()">
+                        <input type="checkbox"
+                            onclick="event.stopPropagation();setAllCheckBoxes(this.checked,'memberCheckBox');" />
+                        <span class="d-none d-md-inline">tout</span>&nbsp;selectionner
+                    </span>
+                </td>
+                <th colspan="3" rowspan="1" class="m-0 py-1">
+                    <div class="input-group w-100 justify-content-center">
+                        <input class="form-control-sm text-light border-0 border-dark rounded-start-pill bg-dark"
+                            style="width: 80% !important;" placeholder="Filtre textuel (tous les champs)"
+                            onkeyup="filterTheZone(document.getElementById('membersRows'),this.value)" />
+                        <div
+                            class="input-group-text m-0 py-0 px-1 bg-dark border-dark rounded-end-pill px-2 text-white">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                    </div>
+                </th>
+                <th colspan="1" rowspan="1" class="m-0 py-1">
+                    <div class="btn-group">
+                        <button class="btn btn-dark btn-sm dropdown-toggle rounded-pill px-3 m-0" type="button"
+                            data-bs-toggle="dropdown">
+                            Actions groupées
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li class="dropdown-item text-center text-primary">Contacter</li>
+                            <li class="dropdown-item text-center text-warning">Modifier</li>
+                            <li class="dropdown-item text-center text-danger">Supprimer</li>
+                        </ul>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody class="text-start" id="membersRows">
+            <!-- MEMBER ROWS -->
+        </tbody>
+    </table>
+</body>
+<script>
+    let membersTable = {
+        rowsContainer: document.getElementById("membersRows"),
+
+        add: function (argMember) {
+            this.add(argMember.id, argMember.nom, argMember.prenom, argMember.email, argMember.points, argMember.credits);
+        },
+        add: function (argId, argNom, argPrenom, argEmail, argPoints, argCredits) {
+            //<tr>
+            let newRow = document.createElement("tr");
+            newRow.setAttribute("colspan", "8");
+            newRow.setAttribute("filterString", `${argId} ${argNom} ${argPrenom} ${argEmail} ${argPoints} ${argCredits}`);
+            newRow.classList.add("filteredElement");
+
+            // checkbox
+            let checkboxCell = document.createElement("td");
+            checkboxCell.setAttribute("colspan", "1");
+            checkboxCell.setAttribute("rowspan", "1");
+            checkboxCell.classList.add("m-0", "px-2", "pt-3", "pb-1");
+            checkboxCell.innerHTML = `<input type="checkbox" class="memberCheckBox" data-id="${argId}" />`;
+            newRow.appendChild(checkboxCell);
+
+            // Cellules pour les autres données
+            let dataCells = [
+                { text: argNom, label: "Nom" },
+                { text: argPrenom, label: "Prénom" },
+                { text: argEmail, label: "Email", hideWhenNarrow: "true" },
+            ];
+
+            dataCells.forEach((cellData) => {
+                let dataCell = document.createElement("td");
+                dataCell.setAttribute("colspan", "1");
+                dataCell.setAttribute("rowspan", "1");
+                dataCell.classList.add("m-0", "px-2", "pt-3", "pb-1");
+                dataCell.innerHTML = `
+                <span class="text-black position-relative fw-bold ${cellData.hideWhenNarrow === "true" ? "d-none d-md-inline" : ""}">${cellData.text}
+                    <span class="position-absolute top-0 start-0 translate-middle-y badge p-0 pb-1 m-0 text-secondary">${cellData.label}</span>
+                </span>
+            `;
+                newRow.appendChild(dataCell);
+            });
+
+            let pointsCell = document.createElement("td");
+            pointsCell.setAttribute("colspan", "1");
+            pointsCell.setAttribute("rowspan", "1");
+            pointsCell.classList.add("m-0", "px-2", "pt-3", "pb-1");
+            pointsCell.innerHTML = `
+                <div class="position-relative  border-primary border-2  align-items-center border-bottom rounded text-center">
+                        &nbsp;<span class="memberdisplayPoints">${argPoints}</span>&nbsp;
+                        <span class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-primary">
+                            Points
+                        </span>
+                    </div>
+            `;
+            newRow.appendChild(pointsCell);
+
+            let creditsCell = document.createElement("td");
+            creditsCell.setAttribute("colspan", "1");
+            creditsCell.setAttribute("rowspan", "1");
+            creditsCell.classList.add("m-0", "px-2", "pt-3", "pb-1");
+            creditsCell.innerHTML = `
+                <div class="position-relative  border-success border-2  align-items-center border-bottom rounded text-center">
+                        <span class="memberdisplayCredits">${argCredits}</span>&nbsp;€
+                        <span class=" position-absolute top-0 start-0 translate-middle-y   badge p-0 m-0  text-success">
+                            Crédits
+                        </span>
+                    </div>
+            `;
+            newRow.appendChild(creditsCell);
+
+            // actions
+            let actionsCell = document.createElement("td");
+            actionsCell.setAttribute("colspan", "1");
+            actionsCell.setAttribute("rowspan", "1");
+            actionsCell.classList.add("m-0", "px-2", "pt-2", "pb-1", "text-center");
+            actionsCell.innerHTML = `
+                <div class="btn-group">
+                    <button class="btn btn-dark btn-sm dropdown-toggle rounded-pill px-3 m-0" type="button" data-bs-toggle="dropdown">
+                        Actions
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li class="dropdown-item text-center text-primary" onclick="contactMember('${argId}')">Contacter</li>
+                        <li class="dropdown-item text-center text-warning" onclick="ERPMODALS.open.modifier_membre(${argId})">Modifier</li>
+                        <li class="dropdown-item text-center text-danger" onclick="deleteMember('${argId}')">Supprimer</li>
+                    </ul>
+                </div>`;
+            newRow.appendChild(actionsCell);
+
+            this.rowsContainer.appendChild(newRow);
+        },
+
+        clear: function () {
+            this.rowsContainer.innerHTML = "";
+        },
+        fetch: function () {
+            this.clear();
+            fetch(URL_SERVER_NAME + "/api/customer/all")
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch member data");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    data.forEach((member) => {
+                        membersTable.add(member.customerId, member.firstName, member.lastName, member.mail, member.points, member.points / 100);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching member data:", error);
+                });
+        },
+    };
+    function setAllCheckBoxes(argState, checkBoxesClass) {
+        const checkboxes = document.getElementsByClassName(checkBoxesClass);
+        let checkbox;
+        for (let i = 0; i < checkboxes.length; i++) {
+            checkbox = checkboxes[i];
+            if (checkbox.checked !== argState) {
+                checkbox.click();
+                checkbox.checked = argState;
+            }
+        }
+    }
+
+    membersTable.fetch();
+</script>
+
+<script>
+    function contactMember(email) {
+        window.location.href = `mailto:${email}`;
+    }
+
+    function deleteMember(id) {
+        const url = URL_SERVER_NAME + "/api/customer/delete";
+        const options = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: id,
+        };
+
+        fetch(url, options)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to delete member");
+                }
+                membersTable.fetch();
+            })
+            .catch((error) => {
+                console.error("Error deleting member:", error);
+            });
+    }
+
+</script>
+
+</html>

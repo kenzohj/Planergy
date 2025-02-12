@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- nous -->
+    <link rel="stylesheet" href="../css/base.css" />
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+    <script src="../js/Utils.js"></script>
+</head>
+<body>
+<div id="monConteneur" class="text-center">
+    <h1>Titre de la page</h1>
+    <p>Contenu de la page...</p>
+    <div id="spinnerContainer" class="py-2"></div>
+    <hr/>
+    <button type="button" class="btn btn-primary" onclick="setLoading(document.getElementById('spinnerContainer'))">Démarrer le chargement</button>
+    <button type="button" class="btn btn-warning" onclick="unsetLoading(document.getElementById('spinnerContainer'))">Arrêter le chargement</button>
+</div>
+</body>
+</html>

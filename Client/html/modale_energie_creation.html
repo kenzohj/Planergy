@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP - SAE4</title>
+    <!-- SI LE SERVEUR EST DOWN, IL FAUT PASSER CETTE VARIABLE A FALSE POUR QUE LES URL SOIENT LOCALHOST (il faut host le serveur de la partie server avec java) -->
+    <script src="../js/isLocalHost.js"></script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d911925501.js" crossorigin="anonymous"></script>
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- nous -->
+    <link rel="stylesheet" href="../css/base.css" />
+    <script src="../js/filteredZone.js"></script>
+    <script src="../js/Modals.js"></script>
+</head>
+
+<body class="bgIsBlackPage">
+    <div class="flexiCenter m-0 py-0 px-2 overflow-y-auto" style="height: 100vh !important; width: 100vw !important;">
+        <form class="bgIsWhitePage container align-items-center p-2 border-black border-2 border rounded">
+            <!-- set the form's url -->
+            <!-- form content -->
+            <div class="form-group">
+                <label for="name">Nom</label>
+                <input type="text" class="form-control shadow" id="name" placeholder="SP-98" />
+            </div>
+            <div class="form-group">
+                <label for="price">Prix</label>
+                <input type="text" class="form-control shadow" id="price" placeholder="100€" />
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantité </label>
+                <input type="text" class="form-control shadow" id="quantity" placeholder="0" />
+            </div>
+            <div class="form-group">
+                <label for="limit">Seuil d'alerte </label>
+                <input type="text" class="form-control shadow" id="limit" placeholder="1000" />
+            </div>
+            <hr />
+            <div class="row text-end">
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-success btn-block">Ajouter énergie</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
+
+<script>
+    function getFormData() {
+        const name = document.getElementById("name").value;
+        const price = document.getElementById("price").value;
+        const quantity = document.getElementById("quantity").value;
+        const limit = document.getElementById("limit").value;
+
+        return { name, price, quantity, limit };
+    }
+
+    function sendPostRequest() {
+        const url = URL_SERVER_NAME + "/api/energy/create";
+        const data = getFormData();
+
+        const options = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        };
+
+        console.log("Sending POST request to:", url);
+        console.log("Request data:", data);
+
+        fetch(url, options)
+            .then((response) => {
+                if (response.status === 201) {
+                    return response.json();
+                } else {
+                    throw new Error("Failed to create energy");
+                }
+            })
+            .then((data) => {
+                console.log("energy created successfully:", data);
+                alert("Energie ajoutée avec succès");
+            })
+            .catch((error) => {
+                alert("Erreur lors de l'ajout de l'énergie");
+                console.error("Error creating energy:", error.message);
+            });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const submitButton = document.querySelector(".btn-success");
+        submitButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            sendPostRequest();
+        });
+    });
+</script>
